@@ -5,6 +5,7 @@ use nom::IResult;
 use nom::bytes::complete::take;
 use nom::sequence::tuple;
 use nom::character::complete;
+use nom::number::complete::double;
 
 #[derive(Debug, Eq, PartialEq)]
 enum TransactionKind {
@@ -79,6 +80,12 @@ fn parse_description(input: &str) -> IResult<&str, &str> {
     Ok((input, description.trim()))
 }
 
+fn parse_amount(input: &str) -> IResult<&str, f64> {
+    let mut parser = tuple((tag("$"), double));
+    let (input, amount) = parser(input)?;
+    Ok((input, amount.1))
+}
+
 fn main() {
     let input = r#"
     CREDIT    04062020    PayPal transfer    $4.99
@@ -116,4 +123,10 @@ fn test_mmddyyyy() {
 fn test_description() {
     let input = "PayPal transfer    $4.99";
     assert_eq!(parse_description(input), Ok(("$4.99", "PayPal transfer")));
+}
+
+#[test]
+fn test_amount() {
+    let input = "$4.99";
+    assert_eq!(parse_amount(input), Ok(("", 4.99)));
 }
