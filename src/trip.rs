@@ -2,10 +2,10 @@
 #![warn(unused_variables)]
 
 use nom::bytes::complete::{tag, take_until};
-use nom::character::complete::{alpha1, space0, space1, u16};
+use nom::character::complete::{alpha1, multispace0, newline, space0, space1, u16};
 use nom::IResult;
 use nom::sequence::{tuple,separated_pair};
-use nom::multi::many1;
+use nom::multi::{many0, many1};
 use nom::number::complete::double;
 
 #[derive(Debug, PartialEq)]
@@ -28,7 +28,9 @@ struct Trip {
 }
 
 fn parse_country(input: &str) -> IResult<&str, &str> {
-    alpha1(input)
+    let mut parser = tuple((alpha1, newline));
+    let (input, (name, _)) = parser(input)?;
+    Ok((input, name))
 }
 
 fn parse_space(input: &str) -> IResult<&str, &str> {
@@ -56,17 +58,17 @@ fn parse_lat_long(input: &str) -> IResult<&str, Coordinate> {
 }
 
 fn parse_destination(input: &str) -> IResult<&str, Destination> {
-    let mut parser = tuple((space1, parse_destination_name, tag(" : "), parse_lat_long, tag(" : "), u16));
-    let (input, (_, name, t, coord, _, sales)) = parser(input)?;
+    let mut parser = tuple((space1, parse_destination_name, tag(" : "), parse_lat_long, tag(" : "), u16, many0(newline)));
+    let (input, (_, name, t, coord, _, sales, _)) = parser(input)?;
     Ok((input, Destination { name: name.into(), coord, sales}))
 }
 
 fn parse_trip(input: &str) -> IResult<&str, Trip> {
-    let mut parser = tuple((parse_country, space0, many1(tuple((parse_destination, space0)))));
-    let (input, (country, _, destination)) = parser(input)?;
+    let mut parser = tuple((parse_country, many1(parse_destination)));
+    let (input, (country, destination)) = parser(input)?;
     Ok((input, Trip {
         country: country.into(),
-        destination: destination.into_iter().map(|(d, _)| d).collect()
+        destination: destination.into_iter().map(|(d)| d).collect()
     }))
 }
 
@@ -91,7 +93,14 @@ Switzerland
     Bern : 46.949076,7.448151 : 1
     "#;
 
-    println!("{:?}", parse_multi_trip(input));
+    if let Ok((_, trips)) = parse_multi_trip(input) {
+        println!("{:#?}", trips);
+        let countries = trips
+            .into_iter()
+            .map(|trip| trip.country)
+            .collect::<Vec<String>>();
+        println!("{:?}", countries);
+    }
 }
 
 #[test]
@@ -102,12 +111,22 @@ fn test_destination() {
         coord: Coordinate {lat: 59.914289, lon: 10.738739},
         sales: 2
     })));
+
+    let input = "    Ulan Ude : 51.841624,107.608101 : 2";
+    assert_eq!(parse_destination(input), Ok(("", Destination {
+        name: "Ulan Ude".into(),
+        coord: Coordinate {lat: 51.841624, lon: 107.608101},
+        sales: 2
+    })));
 }
 
 #[test]
 fn test_destination_name() {
     let input = "Oslo : 59.914289,10.738739 : 2";
     assert_eq!(parse_destination_name(input), Ok((" : 59.914289,10.738739 : 2", "Oslo".into())));
+
+    let input = "Ulan Ude : 51.841624,107.608101 : 2";
+    assert_eq!(parse_destination_name(input), Ok((" : 51.841624,107.608101 : 2", "Ulan Ude").into()));
 }
 
 #[test]
@@ -117,12 +136,13 @@ fn test_lat_lon() {
 }
 
 #[test]
-fn test_parse_trip() {
+fn test_trip() {
     let input = r#"Russia
     Vladivostok : 43.131621,131.923828 : 4
     Ulan Ude : 51.841624,107.608101 : 2
-    Saint Petersburg : 59.939977,30.315785 : 10
-    "#;
+    Saint Petersburg : 59.939977,30.315785 : 10"#;
+
+    print!("{}", input);
 
     assert_eq!(parse_trip(input), Ok(("", Trip {
         country: "Russia".into(),
