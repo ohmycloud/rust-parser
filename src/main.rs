@@ -1,11 +1,11 @@
 mod trip;
 
-use std::error::Error;
-use nom::sequence::{delimited, separated_pair, Tuple};
-use nom::IResult;
 use nom::bytes::complete::{tag, take_while_m_n};
 use nom::character::complete::i32;
 use nom::combinator::map_res;
+use nom::sequence::{delimited, separated_pair, Tuple};
+use nom::IResult;
+use std::error::Error;
 
 #[derive(Debug, PartialEq)]
 pub struct Point {
@@ -34,8 +34,8 @@ pub fn hex_primary(input: &str) -> IResult<&str, u8> {
 
 pub fn hex_color(input: &str) -> IResult<&str, Color> {
     let (input, _) = tag("#")(input)?;
-    let (input, (red,green, blue)) = (hex_primary, hex_primary, hex_primary).parse(input)?;
-    Ok((input,Color {red, green, blue}))
+    let (input, (red, green, blue)) = (hex_primary, hex_primary, hex_primary).parse(input)?;
+    Ok((input, Color { red, green, blue }))
 }
 
 pub fn parse_integer_pair(input: &str) -> IResult<&str, (i32, i32)> {
@@ -43,12 +43,8 @@ pub fn parse_integer_pair(input: &str) -> IResult<&str, (i32, i32)> {
 }
 
 pub fn parse_point(input: &str) -> IResult<&str, Point> {
-    let (remaining, (x, y)) = delimited(
-        tag("("), 
-        parse_integer_pair, 
-        tag(")")
-    )(input)?;
-    Ok((remaining, Point {x, y}))
+    let (remaining, (x, y)) = delimited(tag("("), parse_integer_pair, tag(")"))(input)?;
+    Ok((remaining, Point { x, y }))
 }
 
 pub fn do_nothing_parser(input: &str) -> IResult<&str, &str> {
@@ -71,10 +67,10 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // parse point
     let (_, parsed) = parse_point("(3, 5)")?;
-    assert_eq!(parsed, Point {x: 3, y: 5});
+    assert_eq!(parsed, Point { x: 3, y: 5 });
 
     let (_, parsed) = parse_point("(2, -4)")?;
-    assert_eq!(parsed, Point {x: 2, y: -4});
+    assert_eq!(parsed, Point { x: 2, y: -4 });
 
     let parsing_error = parse_point("(,3");
     assert!(parsing_error.is_err());
@@ -88,7 +84,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 fn parse_color() {
     assert_eq!(
         hex_color("#2F14DF"),
-        Ok(( 
+        Ok((
             "",
             Color {
                 red: 47,
