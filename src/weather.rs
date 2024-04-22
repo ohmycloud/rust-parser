@@ -53,10 +53,10 @@ fn parse_observations(input: &str) -> IResult<&str, Vec<HashMap<String, Vec<f64>
     Ok((input, obs))
 }
 
-fn parse_weather(input: &str) -> IResult<&str, &str> {
+fn parse_weather(input: &str) -> IResult<&str, (Vec<KeyVal>, Vec<HashMap<String, Vec<f64>>>)> {
     let mut parser = tuple((parse_keyvals, parse_observations));
     let (input, res) = parser(input)?;
-    Ok((input, ""))
+    Ok((input, res))
 }
 
 fn main() {
