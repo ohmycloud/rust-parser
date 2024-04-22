@@ -17,3 +17,7 @@ path = "src/main.rs"
 [[bin]]
 name = "trans"
 path = "src/transaction.rs"
+
+[[bin]]
+name = "weather"
+path = "src/weather.rs"
