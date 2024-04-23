@@ -1,7 +1,9 @@
 use nom::bytes::complete::tag;
-use nom::character::complete::{digit1, space1};
+use nom::character::complete::{alphanumeric1, digit1, space1};
 use nom::IResult;
 use nom::sequence::tuple;
+use nom::multi::separated_list1;
+use winnow::combinator::alt;
 
 // 解析服务器时间
 fn parse_server_time(input: &str) -> IResult<&str, &str> {
@@ -10,11 +12,22 @@ fn parse_server_time(input: &str) -> IResult<&str, &str> {
     Ok((input, year))
 }
 
+fn parse_topic_name(input: &str) -> IResult<&str, Vec<&str>> {
+    let mut parser = tuple((tag("["), separated_list1(tag("/"), alphanumeric1), tag("]")));
+    let (input, (_, topics, _)) = parser(input)?;
+    Ok((input, topics))
+}
 
 #[test]
 fn test_server_time() {
     let input = "2024-04-06 02:10:07.714";
     assert_eq!(parse_server_time(input), Ok(("", "2024")));
+}
+
+#[test]
+fn test_topic_name() {
+    let input = "[yjhy/GZYJHYEMS001/report/change]";
+    assert_eq!(parse_topic_name(input), Ok(("", vec!["yjhy", "GZYJHYEMS001", "report", "change"])));
 }
 
 #[test]
