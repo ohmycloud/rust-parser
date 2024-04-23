@@ -12,7 +12,7 @@ use nom::IResult;
 use std::str::FromStr;
 
 #[derive(Debug, PartialEq)]
-struct Transaction {
+pub struct Transaction {
     kind: TransactionKind,
     date: Date,
     description: String,
@@ -109,26 +109,10 @@ fn parse_transaction(input: &str) -> IResult<&str, Transaction> {
     ))
 }
 
-fn parse_transactions(input: &str) -> IResult<&str, Vec<Transaction>> {
+pub fn parse_transactions(input: &str) -> IResult<&str, Vec<Transaction>> {
     let mut parser = many1(parse_transaction);
     let (input, transactions) = parser(input)?;
     Ok((input, transactions))
-}
-
-fn main() {
-    let input = r#"
-    CREDIT    04062020    PayPal transfer    $4.99
-    CREDIT    04032020    Payroll            $69.73
-    DEBIT     04022020    ACH transfer       $38.25
-    DEBIT     03242020    IRS tax kind       $52249.98
-    "#
-    .trim_end();
-
-    if let Ok((_, transactions)) = parse_transactions(input) {
-        println!("{:#?}", transactions);
-    } else {
-        print!("parse failed with: {:?}", input);
-    }
 }
 
 #[test]
