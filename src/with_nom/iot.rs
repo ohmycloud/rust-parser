@@ -36,6 +36,8 @@ fn parse_topic_name(input: &str) -> IResult<&str, Vec<&str>> {
 fn parse_json(input: &str) -> IResult<&str, &str> {
     let mut parser = tuple((tag("D:"), not_line_ending));
     let (input, (_, json)) = parser(input)?;
+    // println!("{:?}", serde_json::to_string_pretty(json));
+
     Ok((input, json))
 }
 
