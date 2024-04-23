@@ -25,8 +25,8 @@ pub struct Trip {
 }
 
 fn parse_country(input: &str) -> IResult<&str, &str> {
-    let mut parser = tuple((alpha1, newline));
-    let (input, (name, _)) = parser(input)?;
+    let mut parser = tuple((many0(newline), space0, alpha1, newline));
+    let (input, (_, _, name, _)) = parser(input)?;
     Ok((input, name))
 }
 
