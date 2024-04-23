@@ -1,4 +1,2 @@
 mod with_winnow;
-fn main() {
-
-}
+fn main() {}

@@ -1,14 +1,29 @@
 use nom::bytes::complete::tag;
-use nom::character::complete::{alphanumeric1, digit1, space1};
-use nom::IResult;
-use nom::sequence::tuple;
+use nom::character::complete::not_line_ending;
+use nom::character::complete::{alphanumeric1, digit1, newline, none_of, space1};
 use nom::multi::separated_list1;
-use winnow::combinator::alt;
+use nom::sequence::tuple;
+use nom::IResult;
 
 // 解析服务器时间
 fn parse_server_time(input: &str) -> IResult<&str, &str> {
-    let mut parser = tuple((digit1, tag("-"), digit1, tag("-"), digit1, space1, digit1, tag(":"), digit1, tag(":"), digit1, tag("."), digit1));
-    let (input, (year, _, month, _, day, _, hour, _, minute, _, seconds, _, micro_sec)) = parser(input)?;
+    let mut parser = tuple((
+        digit1,
+        tag("-"),
+        digit1,
+        tag("-"),
+        digit1,
+        space1,
+        digit1,
+        tag(":"),
+        digit1,
+        tag(":"),
+        digit1,
+        tag("."),
+        digit1,
+    ));
+    let (input, (year, _, month, _, day, _, hour, _, minute, _, seconds, _, micro_sec)) =
+        parser(input)?;
     Ok((input, year))
 }
 
@@ -16,6 +31,12 @@ fn parse_topic_name(input: &str) -> IResult<&str, Vec<&str>> {
     let mut parser = tuple((tag("["), separated_list1(tag("/"), alphanumeric1), tag("]")));
     let (input, (_, topics, _)) = parser(input)?;
     Ok((input, topics))
+}
+
+fn parse_json(input: &str) -> IResult<&str, &str> {
+    let mut parser = tuple((tag("D:"), not_line_ending));
+    let (input, (_, json)) = parser(input)?;
+    Ok((input, json))
 }
 
 #[test]
@@ -27,7 +48,22 @@ fn test_server_time() {
 #[test]
 fn test_topic_name() {
     let input = "[yjhy/GZYJHYEMS001/report/change]";
-    assert_eq!(parse_topic_name(input), Ok(("", vec!["yjhy", "GZYJHYEMS001", "report", "change"])));
+    assert_eq!(
+        parse_topic_name(input),
+        Ok(("", vec!["yjhy", "GZYJHYEMS001", "report", "change"]))
+    );
+}
+
+#[test]
+fn test_json_str() {
+    let input = r#"D:[{"daValues":{"GZYJHYGW001PCS1Bay01_MC/ZINV1$ST$PwrDrtSt$stVal":"2"},"dsName":"dsDin","errCode":"0","iedName":"GZYJHYGW001PCS1","ts":"2024-04-06 02:10:07"}]"#;
+    assert_eq!(
+        parse_json(input),
+        Ok((
+            "",
+            r#"[{"daValues":{"GZYJHYGW001PCS1Bay01_MC/ZINV1$ST$PwrDrtSt$stVal":"2"},"dsName":"dsDin","errCode":"0","iedName":"GZYJHYGW001PCS1","ts":"2024-04-06 02:10:07"}]"#
+        ))
+    );
 }
 
 #[test]

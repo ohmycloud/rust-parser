@@ -1,3 +1,1 @@
-fn parse_section() {
-
-}
+fn parse_section() {}
