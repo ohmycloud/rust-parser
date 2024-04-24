@@ -4,6 +4,18 @@ use nom::character::complete::{alphanumeric1, digit1, newline, none_of, space1};
 use nom::multi::separated_list1;
 use nom::sequence::tuple;
 use nom::IResult;
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct Yjhy {
+    da_values: Value,
+    ds_name: String,
+    err_code: String,
+    ied_name: String,
+    ts: String,
+}
 
 // 解析服务器时间
 fn parse_server_time(input: &str) -> IResult<&str, &str> {
@@ -36,7 +48,13 @@ fn parse_topic_name(input: &str) -> IResult<&str, Vec<&str>> {
 fn parse_json(input: &str) -> IResult<&str, &str> {
     let mut parser = tuple((tag("D:"), not_line_ending));
     let (input, (_, json)) = parser(input)?;
-    // println!("{:?}", serde_json::to_string_pretty(json));
+
+    let json_str= serde_json::from_str::<Vec<Yjhy>>(json);
+    if let Ok(json_str) = json_str {
+        println!("{:?}", json_str);
+    } else {
+        println!("parse failed: {}", json);
+    }
 
     Ok((input, json))
 }
