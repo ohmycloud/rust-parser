@@ -34,7 +34,7 @@ impl Inclusion {
         self.hex[2..].chars().map(Self::to_binary).collect()
     }
     fn hex_to_binary(&self) -> String {
-        let binary_string = if let Ok(hex_value) = u16::from_str_radix(self.hex.trim_start_matches("0x"), 16) {
+        let binary_string = if let Ok(hex_value) = usize::from_str_radix(self.hex.trim_start_matches("0x"), 16) {
             let binary_string = format!("{:016b}", hex_value);
             binary_string
         } else {
@@ -53,11 +53,11 @@ fn main() {
 #[test]
 fn test_inclusion() {
     let inclusion = Inclusion { hex: "0xFFFFFFFFFFFE".into() };
-    assert_eq!(inclusion.binary(), "111111111111111111111111111111111111111111111110");
+    assert_eq!(inclusion.hex_to_binary(), "111111111111111111111111111111111111111111111110");
 
     let inclusion = Inclusion { hex: "0xffff8".into() };
-    assert_eq!(inclusion.binary(), "11111111111111111000");
+    assert_eq!(inclusion.hex_to_binary(), "11111111111111111000");
 
     let inclusion = Inclusion { hex: "0x1FD3C00800000000".into() };
-    assert_eq!(inclusion.binary(), "1111111010011110000000000100000000000000000000000000000000000");
+    assert_eq!(inclusion.hex_to_binary(), "1111111010011110000000000100000000000000000000000000000000000");
 }
