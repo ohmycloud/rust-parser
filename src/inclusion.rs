@@ -35,7 +35,7 @@ impl Inclusion {
     }
     fn hex_to_binary(&self) -> String {
         let binary_string = if let Ok(hex_value) = usize::from_str_radix(self.hex.trim_start_matches("0x"), 16) {
-            let binary_string = format!("{:016b}", hex_value);
+            let binary_string = format!("{:0b}", hex_value);
             binary_string
         } else {
             "".into()
