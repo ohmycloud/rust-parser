@@ -131,6 +131,7 @@ fn test_inclusion() -> anyhow::Result<()> {
     let input = "0xffff8";
     assert_eq!(hex_to_binary(input), "11111111111111111000");
 
+
     let input = "0x1FD3C00800000000";
     assert_eq!(hex_to_binary(input), "1111111010011110000000000100000000000000000000000000000000000");
 
