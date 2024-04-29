@@ -4,12 +4,10 @@ use nom::bytes::complete::take;
 use nom::bytes::complete::{tag, take_until};
 use nom::character::complete;
 use nom::character::complete::{alpha1, newline, space1};
-use nom::error::{Error, ErrorKind};
 use nom::multi::{many0, many1};
 use nom::number::complete::double;
 use nom::sequence::tuple;
 use nom::IResult;
-use std::str::FromStr;
 
 #[derive(Debug, PartialEq)]
 pub struct Transaction {
