@@ -24,3 +24,7 @@ path = "src/winnow_app.rs"
 [[bin]]
 name = "inclusion"
 path = "src/inclusion.rs"
+
+[[bin]]
+name = "mqtt"
+path = "src/mqtt.rs"
