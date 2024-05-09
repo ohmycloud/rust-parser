@@ -4,6 +4,7 @@ mod transaction;
 mod trip;
 mod weather;
 mod byts;
+mod zjkg;
 
 pub use transaction::parse_transactions;
 pub use trip::parse_multi_trip;
