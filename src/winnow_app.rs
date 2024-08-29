@@ -2,7 +2,7 @@ mod with_winnow;
 
 use winnow::Parser;
 use with_winnow::parse_transaction;
-use crate::with_winnow::parse_itinerary;
+use crate::with_winnow::{parse_datetime, parse_itinerary};
 
 fn main() -> Result<(), winnow::error::ParseError<&'static str, &'static str>> {
     let inputs = [
@@ -36,6 +36,12 @@ Switzerland
     match parse_itinerary.parse_peek(input) {
         Ok((_, itinerary)) => println!("{:#?}", itinerary),
         Err(e) => eprintln!("Error parsing itinerary: {}", e),
+    }
+
+    let input = "2024-08-26 00:00:00.720";
+    match parse_datetime.parse(input) {
+        Ok(datetime) => println!("解析结果: {}", datetime),
+        Err(e) => eprintln!("解析错误: {}", e),
     }
 
     Ok(())

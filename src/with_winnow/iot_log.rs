@@ -1,24 +1,33 @@
+use winnow::combinator::delimited;
+use winnow::prelude::*;
+use winnow::Parser;
 use winnow::ascii::digit1;
-use winnow::combinator::{separated, repeat};
-use winnow::{PResult, Parser};
+use winnow::token::one_of;
+use winnow::combinator::separated;
 
-fn parse_datetime<'a>(input: &mut &'a str) -> PResult<&'a str> {
-    let date_separator = |i: &mut &str| {
-        ("-" | " " | ":" | ".").value(()).parse_next(i)
-    };
 
-    let datetime_parser = repeat(2.., (
-        digit1,
-        date_separator
-    )).parse_to_slice();
+pub fn parse_datetime<'s>(s: &mut &'s str) -> PResult<&'s str> {
+    let mut parsed = separated(1.., digit1, one_of(['-', ':', '.', ' ']))
+        .map(|()|())
+        .take();
 
-    datetime_parser.parse_next(input)
+    parsed.parse_next(s)
 }
 
-fn main() {
-    let input = "2024-08-26 00:00:00.720";
-    match parse_datetime.parse(input) {
-        Ok(datetime) => println!("解析结果: {}", datetime),
-        Err(e) => eprintln!("解析错误: {}", e),
-    }
+fn parse_ip_pair<'s>(s: &mut &'s str) -> PResult<&'s str> {
+    let mut parsed = separated(1.., digit1, one_of(['.', ':']))
+        .map(|()|())
+        .take();
+
+    parsed.parse_next(s)
+}
+
+fn parse_channel_info<'s>(s: &mut &'s str) -> PResult<&'s str> {
+    let parsed = separated(1.., parse_ip_pair, '#')
+        .map(|()|())
+        .take();
+
+    let mut parsed = delimited('[', parsed, ']').take();
+
+    parsed.parse_next(s)
 }
