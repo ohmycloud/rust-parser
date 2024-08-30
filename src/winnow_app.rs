@@ -38,10 +38,10 @@ Switzerland
         Err(e) => eprintln!("Error parsing itinerary: {}", e),
     }
 
-    let input = "2024-08-26 00:00:00.720";
-    match parse_datetime.parse(input) {
-        Ok(datetime) => println!("解析结果: {}", datetime),
-        Err(e) => eprintln!("解析错误: {}", e),
+    let mut input = "2024-08-26 00:00:00.720  [117.132.198.154:3649#172.19.85.132:5003] R:68125e48a4000d0103000300c042009cc4de4200";
+    let result = parse_log(&mut input);
+    if let Ok(parsed) = result {
+        println!("{:#?}", parsed);
     }
 
     Ok(())
