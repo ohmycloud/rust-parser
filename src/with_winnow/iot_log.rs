@@ -38,7 +38,7 @@ fn parse_socket<'a>(s: &mut &'a str) -> PResult<Socket<'a>> {
         .map(|()|())
         .take();
     // 解析端口号
-    let parsed_port = digit1.map(|port: &str| port.parse::<u16>().unwrap());
+    let mut parsed_port = digit1.map(|port: &str| port.parse::<u16>().unwrap());
 
     seq!(Socket {
         ip_address: parsed_ip,
