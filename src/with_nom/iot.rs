@@ -1,12 +1,12 @@
 use nom::bytes::complete::tag;
-use nom::character::complete::{newline, not_line_ending};
 use nom::character::complete::{alphanumeric1, digit1, space1};
+use nom::character::complete::{newline, not_line_ending};
 use nom::multi::{many0, separated_list1};
 use nom::sequence::tuple;
 use nom::{IResult, Needed};
+use num::{BigInt, Num};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use num::{BigInt, Num};
 
 // untagged: https://medium.com/@dmitrydoronin/union-types-in-rust-3acf65ed849
 #[derive(Debug, Serialize, Deserialize)]
@@ -59,7 +59,7 @@ fn parse_json_str(input: &str) -> IResult<&str, Vec<Yjhy>> {
     let mut parser = tuple((tag("D:"), not_line_ending));
     let (input, (_, json)) = parser(input)?;
 
-    let parsed= serde_json::from_str::<Vec<Yjhy>>(json);
+    let parsed = serde_json::from_str::<Vec<Yjhy>>(json);
     if let Ok(parsed) = parsed {
         Ok((input, parsed))
     } else {
@@ -68,22 +68,29 @@ fn parse_json_str(input: &str) -> IResult<&str, Vec<Yjhy>> {
 }
 
 fn parse_log(input: &str) -> IResult<&str, Vec<Yjhy>> {
-    let mut parser = tuple((parse_server_time, space1, parse_topic_name, space1, parse_json_str, many0(newline)));
+    let mut parser = tuple((
+        parse_server_time,
+        space1,
+        parse_topic_name,
+        space1,
+        parse_json_str,
+        many0(newline),
+    ));
     let (input, (ts, _, topic_name, _, json_str, _)) = parser(input)?;
     Ok((input, json_str))
 }
 
 fn hex_to_binary(hex: &str) -> String {
-    let binary_string = if let Ok(hex_value) = BigInt::from_str_radix(hex.trim_start_matches("0x"), 16) {
-        println!("{}:{}", hex,hex_value);
-        let binary_string = format!("{:0b}", hex_value);
-        binary_string
-    } else {
-        "".into()
-    };
+    let binary_string =
+        if let Ok(hex_value) = BigInt::from_str_radix(hex.trim_start_matches("0x"), 16) {
+            println!("{}:{}", hex, hex_value);
+            let binary_string = format!("{:0b}", hex_value);
+            binary_string
+        } else {
+            "".into()
+        };
     binary_string
 }
-
 
 #[test]
 fn test_server_time() {
@@ -144,14 +151,19 @@ fn test_inclusion() -> anyhow::Result<()> {
     assert_eq!(hex_to_binary(input), "111111111111111111111111111111111110");
 
     let input = "0xFFFFFFFFFFFE";
-    assert_eq!(hex_to_binary(input), "111111111111111111111111111111111111111111111110");
+    assert_eq!(
+        hex_to_binary(input),
+        "111111111111111111111111111111111111111111111110"
+    );
 
     let input = "0xffff8";
     assert_eq!(hex_to_binary(input), "11111111111111111000");
 
-
     let input = "0x1FD3C00800000000";
-    assert_eq!(hex_to_binary(input), "1111111010011110000000000100000000000000000000000000000000000");
+    assert_eq!(
+        hex_to_binary(input),
+        "1111111010011110000000000100000000000000000000000000000000000"
+    );
 
     let input = "0x0000000050000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
     assert_eq!(hex_to_binary(input), "1010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000");

@@ -17,5 +17,4 @@ fn test_section() {
     =begin code
     Let's to go home.
     =end code"#;
-
 }

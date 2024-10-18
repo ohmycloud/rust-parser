@@ -1,8 +1,8 @@
 mod with_winnow;
 
+use crate::with_winnow::{parse_itinerary, parse_log, parse_weather};
 use winnow::Parser;
 use with_winnow::parse_transaction;
-use crate::with_winnow::{parse_itinerary, parse_log, parse_weather};
 
 fn main() -> Result<(), winnow::error::ParseError<&'static str, &'static str>> {
     let inputs = [
@@ -18,7 +18,6 @@ fn main() -> Result<(), winnow::error::ParseError<&'static str, &'static str>> {
             Err(e) => println!("Error parsing '{}': {:?}", input, e),
         }
     }
-
 
     let input = r#"Russia
     Vladivostok : 43.131621,131.923828 : 4

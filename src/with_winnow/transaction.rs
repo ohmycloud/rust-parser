@@ -1,8 +1,8 @@
-use winnow::prelude::*;
-use winnow::{ascii::digit1, ascii::space1, combinator::opt, Parser};
 use winnow::combinator::alt;
 use winnow::error::{ErrMode, ErrorKind, ParserError};
+use winnow::prelude::*;
 use winnow::token::take_till;
+use winnow::{ascii::digit1, ascii::space1, combinator::opt, Parser};
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum TransactionType {
@@ -21,8 +21,9 @@ pub struct Transaction {
 fn parse_transaction_type(input: &mut &str) -> PResult<TransactionType> {
     alt((
         "CREDIT".value(TransactionType::CREDIT),
-        "DEBIT".value(TransactionType::DEBIT)
-    )).parse_next(input)
+        "DEBIT".value(TransactionType::DEBIT),
+    ))
+    .parse_next(input)
 }
 
 fn parse_date(input: &mut &str) -> PResult<String> {
@@ -30,7 +31,7 @@ fn parse_date(input: &mut &str) -> PResult<String> {
 }
 
 fn parse_description(input: &mut &str) -> PResult<String> {
-    take_till(0..,|c: char| c == '$')
+    take_till(0.., |c: char| c == '$')
         .parse_next(input)
         .map(|s: &str| s.trim().to_string())
 }
@@ -44,7 +45,9 @@ fn parse_amount(input: &mut &str) -> PResult<f64> {
                 amount_str.push('.');
                 amount_str.push_str(cents);
             }
-            amount_str.parse::<f64>().map_err(|_| ErrMode::from_error_kind(input, ErrorKind::Verify))
+            amount_str
+                .parse::<f64>()
+                .map_err(|_| ErrMode::from_error_kind(input, ErrorKind::Verify))
         })
 }
 

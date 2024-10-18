@@ -1,9 +1,9 @@
+use std::collections::HashMap;
 use winnow::ascii::{digit1, float};
 use winnow::combinator::{preceded, repeat, separated_pair};
 use winnow::error::InputError;
-use winnow::{PResult, Parser};
-use std::collections::HashMap;
 use winnow::token::take_while;
+use winnow::{PResult, Parser};
 
 #[derive(Debug, PartialEq)]
 struct Coordinate {
@@ -37,8 +37,9 @@ fn parse_city<'a>(input: &mut &'a str) -> PResult<City, InputError<&'a str>> {
     // 解析城市名
     let name = preceded(
         take_while(0.., |c: char| c.is_whitespace()),
-        take_while(1.., |c: char| c != ':')
-    ).parse_next(input)?;
+        take_while(1.., |c: char| c != ':'),
+    )
+    .parse_next(input)?;
 
     // 跳过冒号和空白
     take_while(1.., |c: char| c == ':' || c.is_whitespace()).parse_next(input)?;
@@ -50,9 +51,7 @@ fn parse_city<'a>(input: &mut &'a str) -> PResult<City, InputError<&'a str>> {
     take_while(1.., |c: char| c == ':' || c.is_whitespace()).parse_next(input)?;
 
     // 解析票数
-    let tickets = digit1
-        .map(|s: &str| s.parse().unwrap())
-        .parse_next(input)?;
+    let tickets = digit1.map(|s: &str| s.parse().unwrap()).parse_next(input)?;
 
     // 跳过尾随的空白和换行符
     take_while(0.., |c: char| c.is_whitespace() || c == '\n').parse_next(input)?;
@@ -72,18 +71,15 @@ fn parse_country<'a>(input: &mut &'a str) -> PResult<(String, Vec<City>), InputE
     // 确保消费掉国家名称后的换行符
     take_while(0.., |c: char| c.is_whitespace()).parse_next(input)?;
 
-    let cities = repeat(1.., parse_city)
-        .parse_next(input)?;
+    let cities = repeat(1.., parse_city).parse_next(input)?;
 
     Ok((country_name, cities))
 }
 
 pub fn parse_itinerary<'a>(input: &mut &'a str) -> PResult<Itinerary, InputError<&'a str>> {
     let mut parse_countries = repeat::<_, _, Vec<_>, _, _>(1.., parse_country);
-    let countries: HashMap<String, Vec<City>> = parse_countries
-        .parse_next(input)?
-        .into_iter()
-        .collect();
+    let countries: HashMap<String, Vec<City>> =
+        parse_countries.parse_next(input)?.into_iter().collect();
 
     Ok(Itinerary { countries })
 }
@@ -95,7 +91,10 @@ fn test_parse_city() {
         parse_city(&mut input),
         Ok(City {
             name: "Oslo".to_string(),
-            coordinate: Coordinate { lat: 59.914289, lon: 10.738739 },
+            coordinate: Coordinate {
+                lat: 59.914289,
+                lon: 10.738739
+            },
             tickets: 2,
         })
     );

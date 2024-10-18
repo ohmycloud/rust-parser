@@ -1,15 +1,15 @@
 use nom::bytes::complete::tag;
 use nom::character::complete::{alphanumeric1, digit1, newline, not_line_ending, space1};
-use nom::{IResult, Needed};
 use nom::multi::{many0, separated_list1};
 use nom::sequence::tuple;
+use nom::{IResult, Needed};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Image {
     pub t: String,
-    pub tags: Value
+    pub tags: Value,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -52,7 +52,7 @@ fn parse_json_str(input: &str) -> IResult<&str, Zjkg> {
     let mut parser = tuple((tag("D:"), not_line_ending));
     let (input, (_, json)) = parser(input)?;
 
-    let parsed= serde_json::from_str::<Zjkg>(json);
+    let parsed = serde_json::from_str::<Zjkg>(json);
     if let Ok(parsed) = parsed {
         Ok((input, parsed))
     } else {
@@ -61,7 +61,14 @@ fn parse_json_str(input: &str) -> IResult<&str, Zjkg> {
 }
 
 pub fn parse_zjkg_log(input: &str) -> IResult<&str, Zjkg> {
-    let mut parser = tuple((parse_server_time, space1, parse_topic_name, space1, parse_json_str, many0(newline)));
+    let mut parser = tuple((
+        parse_server_time,
+        space1,
+        parse_topic_name,
+        space1,
+        parse_json_str,
+        many0(newline),
+    ));
     let (input, (ts, _, topic_name, _, json_str, _)) = parser(input)?;
     Ok((input, json_str))
 }
@@ -75,10 +82,7 @@ fn test_server_time() {
 #[test]
 fn test_topic_name() {
     let input = "[zjkg]";
-    assert_eq!(
-        parse_topic_name(input),
-        Ok(("", vec!["zjkg"]))
-    );
+    assert_eq!(parse_topic_name(input), Ok(("", vec!["zjkg"])));
 }
 
 #[test]

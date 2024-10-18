@@ -1,8 +1,8 @@
 use nom::bytes::complete::tag;
 use nom::character::complete::{alphanumeric1, digit1, newline, not_line_ending, space1};
-use nom::{IResult, Needed};
 use nom::multi::{many0, separated_list1};
 use nom::sequence::tuple;
+use nom::{IResult, Needed};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -14,7 +14,7 @@ pub struct Byts {
     pub device_key: String,
     pub device_sn: String,
     pub product_key: String,
-    pub timestamp: u64
+    pub timestamp: u64,
 }
 
 // 解析服务器时间
@@ -48,7 +48,7 @@ fn parse_topic_name(input: &str) -> IResult<&str, Vec<&str>> {
 fn parse_json_str(input: &str) -> IResult<&str, Byts> {
     let mut parser = tuple((tag("D:"), not_line_ending));
     let (input, (_, json)) = parser(input)?;
-    let parsed= serde_json::from_str::<Byts>(json);
+    let parsed = serde_json::from_str::<Byts>(json);
     if let Ok(parsed) = parsed {
         Ok((input, parsed))
     } else {
@@ -57,7 +57,14 @@ fn parse_json_str(input: &str) -> IResult<&str, Byts> {
 }
 
 pub fn parse_log(input: &str) -> IResult<&str, Byts> {
-    let mut parser = tuple((parse_server_time, space1, parse_topic_name, space1, parse_json_str, many0(newline)));
+    let mut parser = tuple((
+        parse_server_time,
+        space1,
+        parse_topic_name,
+        space1,
+        parse_json_str,
+        many0(newline),
+    ));
     let (input, (ts, _, topic_name, _, json_str, _)) = parser(input)?;
     Ok((input, json_str))
 }
