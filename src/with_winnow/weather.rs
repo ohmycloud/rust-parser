@@ -1,9 +1,8 @@
-use nom::character::streaming::multispace0;
 use std::collections::HashMap;
 use winnow::ascii::{alphanumeric1, digit1, float, space0, till_line_ending};
 use winnow::combinator::seq;
-use winnow::combinator::{preceded, repeat, separated};
-use winnow::token::{take, take_until};
+use winnow::combinator::{preceded, repeat};
+use winnow::token::take_until;
 use winnow::PResult;
 use winnow::Parser;
 
@@ -81,7 +80,6 @@ pub fn parse_weather<'a>(input: &mut &'a str) -> PResult<WeatherStation<'a>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use winnow::ascii::line_ending;
 
     #[test]
     fn test_parse_kv() {
