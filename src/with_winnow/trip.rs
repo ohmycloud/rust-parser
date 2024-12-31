@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use winnow::ascii::{digit1, float, space0, space1};
-use winnow::combinator::{cut_err, preceded, repeat, separated_pair};
+use winnow::combinator::{cut_err, preceded, repeat, separated_pair, seq};
 use winnow::error::{ContextError, InputError, StrContext, StrContextValue};
 use winnow::token::{take_until, take_while};
 use winnow::{PResult, Parser};
@@ -27,9 +27,13 @@ fn parse_float<'s>(input: &mut &'s str) -> PResult<f64> {
     float.parse_next(input)
 }
 
+fn parse_tickets<'s>(input: &mut &'s str) -> PResult<u32> {
+    preceded(space0, digit1.try_map(str::parse)).parse_next(input)
+}
+
 fn parse_coordinate<'a>(input: &mut &'a str) -> PResult<Coordinate> {
     preceded(
-        (':', space0),
+        space0,
         separated_pair(parse_float, ',', parse_float).map(|(lat, lon)| Coordinate { lat, lon }),
     )
     .parse_next(input)
@@ -46,24 +50,16 @@ fn parse_city_name<'a>(input: &mut &'a str) -> PResult<&'a str> {
 }
 
 fn parse_destination<'a>(input: &mut &'a str) -> PResult<Destination> {
-    let city_name = parse_city_name.parse_next(input)?;
-    // 解析坐标
-    let coordinate = parse_coordinate.parse_next(input)?;
-
-    // 跳过冒号和空白
-    take_while(1.., |c: char| c == ':' || c.is_whitespace()).parse_next(input)?;
-
-    // 解析票数
-    let tickets = digit1.map(|s: &str| s.parse().unwrap()).parse_next(input)?;
-
-    // 跳过尾随的空白和换行符
-    take_while(0.., |c: char| c.is_whitespace() || c == '\n').parse_next(input)?;
-
-    Ok(Destination {
-        name: city_name.to_string(),
-        coordinate,
-        tickets,
-    })
+    seq!(
+        Destination {
+            name: parse_city_name.map(|x| x.to_string()),
+            _: (space0, ':', space0),
+            coordinate: parse_coordinate,
+            _: (space0, ':', space0),
+            tickets: parse_tickets,
+        }
+    )
+    .parse_next(input)
 }
 
 fn parse_country<'a>(input: &mut &'a str) -> PResult<(String, Vec<Destination>)> {
