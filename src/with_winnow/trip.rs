@@ -1,6 +1,8 @@
 use std::collections::HashMap;
-use winnow::ascii::{digit1, float, space0, space1};
-use winnow::combinator::{cut_err, preceded, repeat, separated_pair, seq};
+use winnow::ascii::{
+    alphanumeric1, digit1, float, multispace0, multispace1, newline, space0, space1,
+};
+use winnow::combinator::{cut_err, preceded, repeat, separated_pair, seq, terminated};
 use winnow::error::{ContextError, InputError, StrContext, StrContextValue};
 use winnow::token::{take_until, take_while};
 use winnow::{PResult, Parser};
@@ -39,14 +41,12 @@ fn parse_coordinate<'a>(input: &mut &'a str) -> PResult<Coordinate> {
     .parse_next(input)
 }
 
+fn parse_country_name<'a>(input: &mut &'a str) -> PResult<&'a str> {
+    terminated(alphanumeric1, multispace1).parse_next(input)
+}
+
 fn parse_city_name<'a>(input: &mut &'a str) -> PResult<&'a str> {
-    preceded(
-        space0,
-        cut_err(take_until(1.., ':'))
-            .context(StrContext::Expected(StrContextValue::StringLiteral(":")))
-            .map(|v: &str| v.trim()),
-    )
-    .parse_next(input)
+    preceded(space0, take_until(1.., ':').map(|v: &str| v.trim())).parse_next(input)
 }
 
 fn parse_destination<'a>(input: &mut &'a str) -> PResult<Destination> {
@@ -57,30 +57,34 @@ fn parse_destination<'a>(input: &mut &'a str) -> PResult<Destination> {
             coordinate: parse_coordinate,
             _: (space0, ':', space0),
             tickets: parse_tickets,
+            _: multispace0
         }
     )
     .parse_next(input)
 }
 
-fn parse_country<'a>(input: &mut &'a str) -> PResult<(String, Vec<Destination>)> {
-    let country_name = take_while(1.., |c: char| c != '\n')
-        .parse_next(input)?
-        .trim()
-        .to_string();
-    // 确保消费掉国家名称后的换行符
-    take_while(0.., |c: char| c.is_whitespace()).parse_next(input)?;
+fn parse_destinations<'a>(input: &mut &'a str) -> PResult<(String, Vec<Destination>)> {
+    let country_name = parse_country_name
+        .map(|x: &str| x.to_string())
+        .parse_next(input)?;
 
-    let cities = repeat(1.., parse_destination).parse_next(input)?;
-
-    Ok((country_name, cities))
+    let destinations = repeat(1.., parse_destination).parse_next(input)?;
+    Ok((country_name, destinations))
 }
 
 pub fn parse_itinerary<'a>(input: &mut &'a str) -> PResult<Itinerary> {
-    let mut parse_countries = repeat::<_, _, Vec<_>, _, _>(1.., parse_country);
+    let mut parse_countries = repeat::<_, _, Vec<_>, _, _>(1.., parse_destinations);
     let countries: HashMap<String, Vec<Destination>> =
         parse_countries.parse_next(input)?.into_iter().collect();
 
     Ok(Itinerary { countries })
+}
+
+#[test]
+fn test_parse_country_name() {
+    let mut input = "Russia \n";
+    let country_name = parse_country_name(&mut input);
+    assert_eq!(country_name, Ok("Russia"))
 }
 
 #[test]
@@ -112,12 +116,12 @@ fn test_parse_destination() {
 }
 
 #[test]
-fn test_parse_country() {
+fn test_parse_destinations() {
     let mut input = r#"Norway
     Oslo : 59.914289,10.738739 : 2
-    Bergen : 60.388533,5.331856 : 4
-"#;
-    let (country, cities) = parse_country(&mut input).unwrap();
+    Bergen : 60.388533,5.331856 : 4"#;
+
+    let (country, cities) = parse_destinations(&mut input).unwrap();
     assert_eq!(country, "Norway");
     assert_eq!(cities.len(), 2);
     assert_eq!(cities[0].name, "Oslo");
@@ -134,6 +138,7 @@ Norway
     Bergen : 60.388533,5.331856 : 4"#;
 
     let itinerary = parse_itinerary(&mut input).unwrap();
+    println!("{:#?}", itinerary);
     assert_eq!(itinerary.countries.len(), 1);
     assert!(itinerary.countries.contains_key("Russia"));
     assert!(itinerary.countries.contains_key("Norway"));
