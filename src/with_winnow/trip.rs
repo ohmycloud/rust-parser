@@ -1,8 +1,8 @@
 use std::collections::HashMap;
-use winnow::ascii::{digit1, float};
-use winnow::combinator::{preceded, repeat, separated_pair};
-use winnow::error::InputError;
-use winnow::token::take_while;
+use winnow::ascii::{digit1, float, space0, space1};
+use winnow::combinator::{cut_err, preceded, repeat, separated_pair};
+use winnow::error::{ContextError, InputError, StrContext, StrContextValue};
+use winnow::token::{take_until, take_while};
 use winnow::{PResult, Parser};
 
 #[derive(Debug, PartialEq)]
@@ -12,7 +12,7 @@ struct Coordinate {
 }
 
 #[derive(Debug, PartialEq)]
-struct City {
+struct Destination {
     name: String,
     coordinate: Coordinate,
     tickets: u32,
@@ -20,30 +20,33 @@ struct City {
 
 #[derive(Debug, PartialEq)]
 pub struct Itinerary {
-    countries: HashMap<String, Vec<City>>,
+    countries: HashMap<String, Vec<Destination>>,
 }
 
-fn parse_float<'s>(input: &mut &'s str) -> PResult<f64, InputError<&'s str>> {
+fn parse_float<'s>(input: &mut &'s str) -> PResult<f64> {
     float.parse_next(input)
 }
 
-fn parse_coordinate<'a>(input: &mut &'a str) -> PResult<Coordinate, InputError<&'a str>> {
-    separated_pair(parse_float, ',', parse_float)
-        .map(|(lat, lon)| Coordinate { lat, lon })
-        .parse_next(input)
+fn parse_coordinate<'a>(input: &mut &'a str) -> PResult<Coordinate> {
+    preceded(
+        (':', space0),
+        separated_pair(parse_float, ',', parse_float).map(|(lat, lon)| Coordinate { lat, lon }),
+    )
+    .parse_next(input)
 }
 
-fn parse_city<'a>(input: &mut &'a str) -> PResult<City, InputError<&'a str>> {
-    // 解析城市名
-    let name = preceded(
-        take_while(0.., |c: char| c.is_whitespace()),
-        take_while(1.., |c: char| c != ':'),
+fn parse_city_name<'a>(input: &mut &'a str) -> PResult<&'a str> {
+    preceded(
+        space0,
+        cut_err(take_until(1.., ':'))
+            .context(StrContext::Expected(StrContextValue::StringLiteral(":")))
+            .map(|v: &str| v.trim()),
     )
-    .parse_next(input)?;
+    .parse_next(input)
+}
 
-    // 跳过冒号和空白
-    take_while(1.., |c: char| c == ':' || c.is_whitespace()).parse_next(input)?;
-
+fn parse_destination<'a>(input: &mut &'a str) -> PResult<Destination> {
+    let city_name = parse_city_name.parse_next(input)?;
     // 解析坐标
     let coordinate = parse_coordinate.parse_next(input)?;
 
@@ -56,14 +59,14 @@ fn parse_city<'a>(input: &mut &'a str) -> PResult<City, InputError<&'a str>> {
     // 跳过尾随的空白和换行符
     take_while(0.., |c: char| c.is_whitespace() || c == '\n').parse_next(input)?;
 
-    Ok(City {
-        name: name.trim().to_string(),
+    Ok(Destination {
+        name: city_name.to_string(),
         coordinate,
         tickets,
     })
 }
 
-fn parse_country<'a>(input: &mut &'a str) -> PResult<(String, Vec<City>), InputError<&'a str>> {
+fn parse_country<'a>(input: &mut &'a str) -> PResult<(String, Vec<Destination>)> {
     let country_name = take_while(1.., |c: char| c != '\n')
         .parse_next(input)?
         .trim()
@@ -71,25 +74,37 @@ fn parse_country<'a>(input: &mut &'a str) -> PResult<(String, Vec<City>), InputE
     // 确保消费掉国家名称后的换行符
     take_while(0.., |c: char| c.is_whitespace()).parse_next(input)?;
 
-    let cities = repeat(1.., parse_city).parse_next(input)?;
+    let cities = repeat(1.., parse_destination).parse_next(input)?;
 
     Ok((country_name, cities))
 }
 
-pub fn parse_itinerary<'a>(input: &mut &'a str) -> PResult<Itinerary, InputError<&'a str>> {
+pub fn parse_itinerary<'a>(input: &mut &'a str) -> PResult<Itinerary> {
     let mut parse_countries = repeat::<_, _, Vec<_>, _, _>(1.., parse_country);
-    let countries: HashMap<String, Vec<City>> =
+    let countries: HashMap<String, Vec<Destination>> =
         parse_countries.parse_next(input)?.into_iter().collect();
 
     Ok(Itinerary { countries })
 }
 
 #[test]
-fn test_parse_city() {
-    let mut input = "Oslo : 59.914289,10.738739 : 2\n";
+fn test_parse_coordinate() {
+    let mut input = "59.914289,10.738739";
     assert_eq!(
-        parse_city(&mut input),
-        Ok(City {
+        parse_coordinate(&mut input),
+        Ok(Coordinate {
+            lat: 59.914289,
+            lon: 10.738739
+        })
+    );
+}
+
+#[test]
+fn test_parse_destination() {
+    let mut input = " Oslo : 59.914289,10.738739 : 2";
+    assert_eq!(
+        parse_destination(&mut input),
+        Ok(Destination {
             name: "Oslo".to_string(),
             coordinate: Coordinate {
                 lat: 59.914289,
