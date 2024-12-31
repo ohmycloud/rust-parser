@@ -1,10 +1,7 @@
 use std::collections::HashMap;
-use winnow::ascii::{
-    alphanumeric1, digit1, float, multispace0, multispace1, newline, space0, space1,
-};
-use winnow::combinator::{cut_err, preceded, repeat, separated_pair, seq, terminated};
-use winnow::error::{ContextError, InputError, StrContext, StrContextValue};
-use winnow::token::{take_until, take_while};
+use winnow::ascii::{alphanumeric1, digit1, float, multispace0, multispace1, space0};
+use winnow::combinator::{preceded, repeat, separated_pair, seq, terminated};
+use winnow::token::take_until;
 use winnow::{PResult, Parser};
 
 #[derive(Debug, PartialEq)]
