@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use winnow::ascii::{alphanumeric1, digit1, float, newline, space0, space1};
-use winnow::combinator::{preceded, repeat, separated_pair, seq, terminated};
+use winnow::combinator::{opt, preceded, repeat, separated_pair, seq, terminated};
 use winnow::token::take_until;
 use winnow::{PResult, Parser};
 
@@ -54,7 +54,7 @@ fn parse_destination<'a>(input: &mut &'a str) -> PResult<Destination> {
             coordinate: parse_coordinate,
             _: (space0, ':', space0),
             tickets: parse_tickets,
-            _: newline
+            _: opt(newline)
         }
     )
     .parse_next(input)
@@ -116,11 +116,10 @@ fn test_parse_destination() {
 fn test_parse_destinations() {
     let mut input = r#"Norway
     Oslo : 59.914289,10.738739 : 2
-    Bergen : 60.388533,5.331856 : 4
-    "#;
+    Bergen : 60.388533,5.331856 : 4"#;
 
     let (country, destinations) = parse_destinations(&mut input).unwrap();
-    println!("{}, {:#?}", country, destinations);
+    println!("{:#?}", destinations);
     assert_eq!(country, "Norway");
     assert_eq!(destinations.len(), 2);
     assert_eq!(destinations[0].name, "Oslo");
@@ -134,8 +133,7 @@ fn test_parse_itinerary() {
     Ulan Ude : 51.841624,107.608101 : 2
 Norway
     Oslo : 59.914289,10.738739 : 2
-    Bergen : 60.388533,5.331856 : 4
-    "#;
+    Bergen : 60.388533,5.331856 : 4"#;
 
     let itinerary = parse_itinerary(&mut input).unwrap();
     println!("{:#?}", itinerary);
