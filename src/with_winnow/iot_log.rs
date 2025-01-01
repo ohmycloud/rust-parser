@@ -9,13 +9,13 @@ use winnow::token::one_of;
 use winnow::token::take_until;
 use winnow::Parser;
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct Socket<'a> {
     pub ip_address: &'a str,
     pub port: u16,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct IotLog<'a> {
     pub data_time: &'a str,
     pub client_socket: Socket<'a>,

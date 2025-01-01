@@ -1,4 +1,4 @@
-use winnow::ascii::{alpha1, multispace1, newline, space0, space1, till_line_ending};
+use winnow::ascii::{alpha1, multispace1, space0, space1, till_line_ending};
 use winnow::combinator::{opt, preceded, repeat, seq};
 use winnow::token::take_until;
 use winnow::{PResult, Parser};
@@ -77,7 +77,6 @@ pub fn parse_http_request<'a>(input: &mut &'a str) -> PResult<HttpRequest<'a>> {
     .parse_next(input)
 }
 
-// 测试代码
 #[cfg(test)]
 mod tests {
     use super::*;
