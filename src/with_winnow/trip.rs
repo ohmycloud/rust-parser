@@ -118,11 +118,12 @@ fn test_parse_destinations() {
     Oslo : 59.914289,10.738739 : 2
     Bergen : 60.388533,5.331856 : 4"#;
 
-    let (country, cities) = parse_destinations(&mut input).unwrap();
+    let (country, destinations) = parse_destinations(&mut input).unwrap();
+    println!("{:#?}", destinations);
     assert_eq!(country, "Norway");
-    assert_eq!(cities.len(), 2);
-    assert_eq!(cities[0].name, "Oslo");
-    assert_eq!(cities[1].name, "Bergen");
+    assert_eq!(destinations.len(), 2);
+    assert_eq!(destinations[0].name, "Oslo");
+    assert_eq!(destinations[1].name, "Bergen");
 }
 
 #[test]
