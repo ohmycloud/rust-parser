@@ -15,7 +15,7 @@ pub struct Kv<'a> {
 #[derive(Debug, PartialEq)]
 pub struct WeatherStation<'a> {
     kvs: Vec<Kv<'a>>,
-    observations: Vec<HashMap<String, Vec<f64>>>,
+    observations: Vec<HashMap<&'a str, Vec<f64>>>,
 }
 
 fn parse_key<'a>(input: &mut &'a str) -> PResult<&'a str> {
@@ -49,13 +49,13 @@ fn parse_temperatures<'a>(input: &mut &'a str) -> PResult<Vec<f64>> {
     repeat(1.., preceded(space0, float.map(|x: f64| x))).parse_next(input)
 }
 
-fn parse_year<'s>(input: &mut &'s str) -> PResult<u32> {
-    preceded(space0, digit1.try_map(str::parse)).parse_next(input)
+fn parse_year<'a>(input: &mut &'a str) -> PResult<&'a str> {
+    preceded(space0, digit1).parse_next(input)
 }
 
-pub fn parse_observation<'a>(input: &mut &'a str) -> PResult<HashMap<String, Vec<f64>>> {
+pub fn parse_observation<'a>(input: &mut &'a str) -> PResult<HashMap<&'a str, Vec<f64>>> {
     Ok(std::iter::once((
-        format!("{}", parse_year.parse_next(input)?),
+        parse_year.parse_next(input)?,
         terminated(parse_temperatures, opt(newline)).parse_next(input)?,
     ))
     .collect())
@@ -68,7 +68,7 @@ fn parse_obs<'a>(input: &mut &'a str) -> PResult<&'a str> {
         .parse_next(input)
 }
 
-pub fn parse_observations<'a>(input: &mut &'a str) -> PResult<Vec<HashMap<String, Vec<f64>>>> {
+pub fn parse_observations<'a>(input: &mut &'a str) -> PResult<Vec<HashMap<&'a str, Vec<f64>>>> {
     repeat(0.., parse_observation).parse_next(input)
 }
 
@@ -168,9 +168,9 @@ mod tests {
     fn test_parse_observation() {
         let mut input = "   1921 -4.4 -7.1 -6.8 -4.3 -0.8  2.2  4.7  5.8  2.7 -2.0 -2.1 -4.0";
         let expected = parse_observation(&mut input).unwrap();
-        let mut actual: HashMap<String, Vec<f64>> = HashMap::new();
+        let mut actual: HashMap<&str, Vec<f64>> = HashMap::new();
         actual.insert(
-            "1921".into(),
+            "1921",
             vec![
                 -4.4, -7.1, -6.8, -4.3, -0.8, 2.2, 4.7, 5.8, 2.7, -2.0, -2.1, -4.0,
             ],
@@ -184,16 +184,16 @@ mod tests {
             2009 -2.3 -5.3 -3.2 -1.6  2.0  2.9  6.7  7.2  3.8  0.6 -0.3 -1.3"#;
 
         let expected = parse_observations(&mut input).unwrap();
-        let mut hash1: HashMap<String, Vec<f64>> = HashMap::new();
+        let mut hash1: HashMap<&str, Vec<f64>> = HashMap::new();
         hash1.insert(
             "1921".into(),
             vec![
                 -4.4, -7.1, -6.8, -4.3, -0.8, 2.2, 4.7, 5.8, 2.7, -2.0, -2.1, -4.0,
             ],
         );
-        let mut hash2: HashMap<String, Vec<f64>> = HashMap::new();
+        let mut hash2: HashMap<&str, Vec<f64>> = HashMap::new();
         hash2.insert(
-            "2009".into(),
+            "2009",
             vec![
                 -2.3, -5.3, -3.2, -1.6, 2.0, 2.9, 6.7, 7.2, 3.8, 0.6, -0.3, -1.3,
             ],
