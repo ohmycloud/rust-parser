@@ -54,10 +54,8 @@ fn parse_year<'s>(input: &mut &'s str) -> PResult<u32> {
 }
 
 pub fn parse_observation<'a>(input: &mut &'a str) -> PResult<HashMap<String, Vec<f64>>> {
-    let parsed_year = parse_year.parse_next(input)?;
-
     Ok(vec![(
-        format!("{}", parsed_year),
+        format!("{}", parse_year.parse_next(input)?),
         terminated(parse_temperatures, opt(newline)).parse_next(input)?,
     )]
     .into_iter()
