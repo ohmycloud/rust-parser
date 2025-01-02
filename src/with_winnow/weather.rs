@@ -18,20 +18,30 @@ pub struct WeatherStation<'a> {
     observations: Vec<HashMap<String, Vec<f64>>>,
 }
 
-pub fn parse_kv_pair<'a>(input: &mut &'a str) -> PResult<Kv<'a>> {
-    let mut parsed_key = preceded(space0, take_until(1.., "=")).map(|x: &str| x.trim());
-    let mut parsed_value = preceded(space0, till_line_ending).map(|x: &str| x.trim());
+fn parse_key<'a>(input: &mut &'a str) -> PResult<&'a str> {
+    preceded(space0, take_until(1.., "="))
+        .map(|x: &str| x.trim())
+        .parse_next(input)
+}
+
+fn parse_value<'a>(input: &mut &'a str) -> PResult<&'a str> {
+    preceded(space0, till_line_ending)
+        .map(|x: &str| x.trim())
+        .parse_next(input)
+}
+
+fn parse_kv_pair<'a>(input: &mut &'a str) -> PResult<Kv<'a>> {
     seq!(
         Kv {
-            key: parsed_key,
+            key: parse_key,
             _: '=',
-            value: parsed_value
+            value: parse_value
         }
     )
     .parse_next(input)
 }
 
-pub fn parse_kvs<'a>(input: &mut &'a str) -> PResult<Vec<Kv<'a>>> {
+fn parse_kvs<'a>(input: &mut &'a str) -> PResult<Vec<Kv<'a>>> {
     repeat(0.., parse_kv_pair).parse_next(input)
 }
 
