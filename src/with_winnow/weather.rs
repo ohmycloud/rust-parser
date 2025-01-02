@@ -32,8 +32,7 @@ pub fn parse_kv_pair<'a>(input: &mut &'a str) -> PResult<Kv<'a>> {
 }
 
 pub fn parse_kvs<'a>(input: &mut &'a str) -> PResult<Vec<Kv<'a>>> {
-    let mut parsed_kvs = repeat(0.., parse_kv_pair);
-    parsed_kvs.parse_next(input)
+    repeat(0.., parse_kv_pair).parse_next(input)
 }
 
 fn parse_temperatures<'a>(input: &mut &'a str) -> PResult<Vec<f64>> {
@@ -63,8 +62,7 @@ fn parse_obs<'a>(input: &mut &'a str) -> PResult<&'a str> {
 }
 
 pub fn parse_observations<'a>(input: &mut &'a str) -> PResult<Vec<HashMap<String, Vec<f64>>>> {
-    let mut parsed_obs = repeat(0.., parse_observation);
-    parsed_obs.parse_next(input)
+    repeat(0.., parse_observation).parse_next(input)
 }
 
 pub fn parse_weather<'a>(input: &mut &'a str) -> PResult<WeatherStation<'a>> {
