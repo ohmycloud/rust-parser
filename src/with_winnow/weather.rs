@@ -54,11 +54,10 @@ fn parse_year<'s>(input: &mut &'s str) -> PResult<u32> {
 }
 
 pub fn parse_observation<'a>(input: &mut &'a str) -> PResult<HashMap<String, Vec<f64>>> {
-    Ok(vec![(
+    Ok(std::iter::once((
         format!("{}", parse_year.parse_next(input)?),
         terminated(parse_temperatures, opt(newline)).parse_next(input)?,
-    )]
-    .into_iter()
+    ))
     .collect())
 }
 
