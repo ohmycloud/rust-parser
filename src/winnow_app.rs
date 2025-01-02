@@ -1,6 +1,6 @@
 mod with_winnow;
 
-use crate::with_winnow::{parse_itinerary, parse_log, parse_weather};
+use crate::with_winnow::{parse_log, parse_trips, parse_weather};
 use winnow::Parser;
 use with_winnow::parse_transaction;
 
@@ -32,7 +32,7 @@ Switzerland
     Wengen : 46.608265,7.922065 : 3
     Bern : 46.949076,7.448151 : 1"#;
 
-    match parse_itinerary.parse_peek(input) {
+    match parse_trips.parse_peek(input) {
         Ok((_, itinerary)) => println!("{:#?}", itinerary),
         Err(e) => eprintln!("Error parsing itinerary: {}", e),
     }

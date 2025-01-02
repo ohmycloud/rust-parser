@@ -5,21 +5,16 @@ use winnow::token::take_until;
 use winnow::{PResult, Parser};
 
 #[derive(Debug, PartialEq)]
-struct Coordinate {
-    lat: f64,
-    lon: f64,
+pub struct Coordinate {
+    pub lat: f64,
+    pub lon: f64,
 }
 
 #[derive(Debug, PartialEq)]
-struct Destination {
-    name: String,
-    coordinate: Coordinate,
-    tickets: u32,
-}
-
-#[derive(Debug, PartialEq)]
-pub struct Itinerary {
-    countries: HashMap<String, Vec<Destination>>,
+pub struct Destination {
+    pub name: String,
+    pub coordinate: Coordinate,
+    pub tickets: u32,
 }
 
 fn parse_float<'s>(input: &mut &'s str) -> PResult<f64> {
@@ -60,21 +55,15 @@ fn parse_destination<'a>(input: &mut &'a str) -> PResult<Destination> {
     .parse_next(input)
 }
 
-fn parse_destinations<'a>(input: &mut &'a str) -> PResult<(String, Vec<Destination>)> {
-    let country_name = parse_country_name
-        .map(|x: &str| x.to_string())
-        .parse_next(input)?;
+fn parse_destinations<'a>(input: &mut &'a str) -> PResult<HashMap<&'a str, Vec<Destination>>> {
+    let country_name = parse_country_name.parse_next(input)?;
 
     let destinations = repeat(1.., parse_destination).parse_next(input)?;
-    Ok((country_name, destinations))
+    Ok(std::iter::once((country_name, destinations)).collect())
 }
 
-pub fn parse_itinerary<'a>(input: &mut &'a str) -> PResult<Itinerary> {
-    let mut parse_countries = repeat::<_, _, Vec<_>, _, _>(1.., parse_destinations);
-    let countries: HashMap<String, Vec<Destination>> =
-        parse_countries.parse_next(input)?.into_iter().collect();
-
-    Ok(Itinerary { countries })
+pub fn parse_trips<'a>(input: &mut &'a str) -> PResult<Vec<HashMap<&'a str, Vec<Destination>>>> {
+    repeat(0.., parse_destinations).parse_next(input)
 }
 
 #[test]
@@ -118,12 +107,31 @@ fn test_parse_destinations() {
     Oslo : 59.914289,10.738739 : 2
     Bergen : 60.388533,5.331856 : 4"#;
 
-    let (country, destinations) = parse_destinations(&mut input).unwrap();
-    println!("{:#?}", destinations);
-    assert_eq!(country, "Norway");
-    assert_eq!(destinations.len(), 2);
-    assert_eq!(destinations[0].name, "Oslo");
-    assert_eq!(destinations[1].name, "Bergen");
+    let trips = parse_trips(&mut input).unwrap();
+    let mut trip: HashMap<&str, Vec<Destination>> = HashMap::new();
+    trip.insert(
+        "Norway",
+        vec![
+            Destination {
+                name: "Oslo".to_string(),
+                coordinate: Coordinate {
+                    lat: 59.914289,
+                    lon: 10.738739,
+                },
+                tickets: 2,
+            },
+            Destination {
+                name: "Bergen".to_string(),
+                coordinate: Coordinate {
+                    lat: 60.388533,
+                    lon: 5.331856,
+                },
+                tickets: 4,
+            },
+        ],
+    );
+
+    assert_eq!(trips, vec![trip]);
 }
 
 #[test]
@@ -135,11 +143,6 @@ Norway
     Oslo : 59.914289,10.738739 : 2
     Bergen : 60.388533,5.331856 : 4"#;
 
-    let itinerary = parse_itinerary(&mut input).unwrap();
-    println!("{:#?}", itinerary);
-    assert_eq!(itinerary.countries.len(), 2);
-    assert!(itinerary.countries.contains_key("Russia"));
-    assert!(itinerary.countries.contains_key("Norway"));
-    assert_eq!(itinerary.countries["Russia"].len(), 2);
-    assert_eq!(itinerary.countries["Norway"].len(), 2);
+    let trips = parse_trips(&mut input).unwrap();
+    println!("{:#?}", trips);
 }
