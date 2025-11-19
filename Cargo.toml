@@ -32,8 +32,8 @@ name = "mqtt"
 path = "src/mqtt.rs"
 
 [[bin]]
-name = "pest_app"
-path = "src/pest_app.rs"
+name = "transaction_app"
+path = "src/with_pest/transaction_app.rs"
 
 [[bin]]
 name = "csv_app"
