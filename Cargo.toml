@@ -34,3 +34,11 @@ path = "src/mqtt.rs"
 [[bin]]
 name = "pest_app"
 path = "src/pest_app.rs"
+
+[[bin]]
+name = "csv_app"
+path = "src/with_pest/csv_app.rs"
+
+[[bin]]
+name = "ini_app"
+path = "src/with_pest/ini_app.rs"
