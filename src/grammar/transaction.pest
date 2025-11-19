@@ -1,0 +1,18 @@
+WHITESPACE  = _{ " " }
+kind        =  { "CREDIT" | "DEBIT" }
+date        =  { ASCII_DIGIT+ }
+description = @{
+    ASCII_ALPHA+ ~ (" "+ ~ ASCII_ALPHA+)*
+}
+
+amount = {
+    "$" ~ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)*
+}
+
+transaction = {
+    kind ~ date ~ description ~ amount ~ NEWLINE*
+}
+
+transactions = {
+    SOI ~ transaction+ ~ EOI
+}

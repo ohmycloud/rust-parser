@@ -12,6 +12,8 @@ serde_json = "1.0.116"
 winnow = "0.6.18"
 clap = { version = "4.5.16", features = ["derive"] }
 num = { version = "0.4.3", features = ["num-bigint"] }
+pest = "2.8.3"
+pest_derive = "2.8.3"
 
 [[bin]]
 name = "nom_app"
@@ -28,3 +30,7 @@ path = "src/inclusion.rs"
 [[bin]]
 name = "mqtt"
 path = "src/mqtt.rs"
+
+[[bin]]
+name = "pest_app"
+path = "src/pest_app.rs"
