@@ -2,5 +2,5 @@
 
 ```bash
 cargo test --features winnow/debug test_parse_destinations -- --nocapture
-cargo run --bin pest_app
+cargo run --bin transaction_app
 ```
