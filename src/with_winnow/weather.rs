@@ -1,10 +1,10 @@
 use std::collections::HashMap;
+use winnow::ModalResult;
+use winnow::Parser;
 use winnow::ascii::{alphanumeric1, digit1, float, newline, space0, till_line_ending};
 use winnow::combinator::{opt, preceded, repeat};
 use winnow::combinator::{seq, terminated};
 use winnow::token::take_until;
-use winnow::PResult;
-use winnow::Parser;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Kv<'a> {
@@ -18,19 +18,19 @@ pub struct WeatherStation<'a> {
     observations: Vec<HashMap<&'a str, Vec<f64>>>,
 }
 
-fn parse_key<'a>(input: &mut &'a str) -> PResult<&'a str> {
+fn parse_key<'a>(input: &mut &'a str) -> ModalResult<&'a str> {
     preceded(space0, take_until(1.., "="))
         .map(|x: &str| x.trim())
         .parse_next(input)
 }
 
-fn parse_value<'a>(input: &mut &'a str) -> PResult<&'a str> {
+fn parse_value<'a>(input: &mut &'a str) -> ModalResult<&'a str> {
     preceded(space0, till_line_ending)
         .map(|x: &str| x.trim())
         .parse_next(input)
 }
 
-fn parse_kv_pair<'a>(input: &mut &'a str) -> PResult<Kv<'a>> {
+fn parse_kv_pair<'a>(input: &mut &'a str) -> ModalResult<Kv<'a>> {
     seq!(
         Kv {
             key: parse_key,
@@ -41,19 +41,19 @@ fn parse_kv_pair<'a>(input: &mut &'a str) -> PResult<Kv<'a>> {
     .parse_next(input)
 }
 
-fn parse_kvs<'a>(input: &mut &'a str) -> PResult<Vec<Kv<'a>>> {
+fn parse_kvs<'a>(input: &mut &'a str) -> ModalResult<Vec<Kv<'a>>> {
     repeat(0.., parse_kv_pair).parse_next(input)
 }
 
-fn parse_temperatures<'a>(input: &mut &'a str) -> PResult<Vec<f64>> {
+fn parse_temperatures<'a>(input: &mut &'a str) -> ModalResult<Vec<f64>> {
     repeat(1.., preceded(space0, float.map(|x: f64| x))).parse_next(input)
 }
 
-fn parse_year<'a>(input: &mut &'a str) -> PResult<&'a str> {
+fn parse_year<'a>(input: &mut &'a str) -> ModalResult<&'a str> {
     preceded(space0, digit1).parse_next(input)
 }
 
-pub fn parse_observation<'a>(input: &mut &'a str) -> PResult<HashMap<&'a str, Vec<f64>>> {
+pub fn parse_observation<'a>(input: &mut &'a str) -> ModalResult<HashMap<&'a str, Vec<f64>>> {
     Ok(std::iter::once((
         parse_year.parse_next(input)?,
         terminated(parse_temperatures, opt(newline)).parse_next(input)?,
@@ -61,18 +61,18 @@ pub fn parse_observation<'a>(input: &mut &'a str) -> PResult<HashMap<&'a str, Ve
     .collect())
 }
 
-fn parse_obs<'a>(input: &mut &'a str) -> PResult<&'a str> {
+fn parse_obs<'a>(input: &mut &'a str) -> ModalResult<&'a str> {
     seq!(preceded(space0, alphanumeric1), ':')
         .take()
         .map(|x: &str| x.trim())
         .parse_next(input)
 }
 
-pub fn parse_observations<'a>(input: &mut &'a str) -> PResult<Vec<HashMap<&'a str, Vec<f64>>>> {
+pub fn parse_observations<'a>(input: &mut &'a str) -> ModalResult<Vec<HashMap<&'a str, Vec<f64>>>> {
     repeat(0.., parse_observation).parse_next(input)
 }
 
-pub fn parse_weather<'a>(input: &mut &'a str) -> PResult<WeatherStation<'a>> {
+pub fn parse_weather<'a>(input: &mut &'a str) -> ModalResult<WeatherStation<'a>> {
     seq!(
         WeatherStation {
             kvs: parse_kvs,
@@ -153,7 +153,9 @@ mod tests {
         let expected = parse_temperatures(&mut input).unwrap();
         assert_eq!(
             expected,
-            vec![-4.4, -7.1, -6.8, -4.3, -0.8, 2.2, 4.7, 5.8, 2.7, -2.0, -2.1, -4.0]
+            vec![
+                -4.4, -7.1, -6.8, -4.3, -0.8, 2.2, 4.7, 5.8, 2.7, -2.0, -2.1, -4.0
+            ]
         );
     }
 

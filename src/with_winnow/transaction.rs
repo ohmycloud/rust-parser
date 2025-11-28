@@ -1,8 +1,9 @@
 use winnow::combinator::alt;
-use winnow::error::{ErrMode, ErrorKind, ParserError};
+use winnow::error::{AddContext, ContextError, ErrMode, StrContext};
 use winnow::prelude::*;
+use winnow::stream::Stream;
 use winnow::token::take_till;
-use winnow::{ascii::digit1, ascii::space1, combinator::opt, Parser};
+use winnow::{Parser, ascii::digit1, ascii::space1, combinator::opt};
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum TransactionType {
@@ -18,7 +19,7 @@ pub struct Transaction {
     pub amount: f64,
 }
 
-fn parse_transaction_type(input: &mut &str) -> PResult<TransactionType> {
+fn parse_transaction_type(input: &mut &str) -> ModalResult<TransactionType> {
     alt((
         "CREDIT".value(TransactionType::CREDIT),
         "DEBIT".value(TransactionType::DEBIT),
@@ -26,17 +27,17 @@ fn parse_transaction_type(input: &mut &str) -> PResult<TransactionType> {
     .parse_next(input)
 }
 
-fn parse_date(input: &mut &str) -> PResult<String> {
+fn parse_date(input: &mut &str) -> ModalResult<String> {
     digit1.parse_next(input).map(|s: &str| s.to_string())
 }
 
-fn parse_description(input: &mut &str) -> PResult<String> {
+fn parse_description(input: &mut &str) -> ModalResult<String> {
     take_till(0.., |c: char| c == '$')
         .parse_next(input)
         .map(|s: &str| s.trim().to_string())
 }
 
-fn parse_amount(input: &mut &str) -> PResult<f64> {
+fn parse_amount(input: &mut &str) -> ModalResult<f64> {
     ('$', digit1, opt((".", digit1)))
         .parse_next(input)
         .and_then(|(_, dollars, cents)| {
@@ -45,13 +46,17 @@ fn parse_amount(input: &mut &str) -> PResult<f64> {
                 amount_str.push('.');
                 amount_str.push_str(cents);
             }
-            amount_str
-                .parse::<f64>()
-                .map_err(|_| ErrMode::from_error_kind(input, ErrorKind::Verify))
+            amount_str.parse::<f64>().map_err(|_| {
+                ErrMode::Cut(ContextError::new().add_context(
+                    input,
+                    &input.checkpoint(),
+                    StrContext::Label("Invalid number format"),
+                ))
+            })
         })
 }
 
-pub fn parse_transaction(input: &mut &str) -> PResult<Transaction> {
+pub fn parse_transaction(input: &mut &str) -> ModalResult<Transaction> {
     let (transaction_type, _, date, _, description, amount) = (
         parse_transaction_type,
         space1,

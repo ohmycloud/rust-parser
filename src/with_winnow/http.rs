@@ -1,7 +1,7 @@
 use winnow::ascii::{alpha1, multispace1, space0, space1, till_line_ending};
 use winnow::combinator::{opt, preceded, repeat, seq};
 use winnow::token::take_until;
-use winnow::{PResult, Parser};
+use winnow::{ModalResult, Parser};
 
 #[derive(Debug, PartialEq)]
 pub struct HttpRequest<'a> {
@@ -23,19 +23,19 @@ pub struct Header<'a> {
     value: &'a str,
 }
 
-fn parse_method<'a>(input: &mut &'a str) -> PResult<&'a str> {
+fn parse_method<'a>(input: &mut &'a str) -> ModalResult<&'a str> {
     alpha1.parse_next(input)
 }
 
-fn parse_path<'a>(input: &mut &'a str) -> PResult<&'a str> {
+fn parse_path<'a>(input: &mut &'a str) -> ModalResult<&'a str> {
     preceded(space1, take_until(1.., " ")).parse_next(input)
 }
 
-fn parse_version<'a>(input: &mut &'a str) -> PResult<&'a str> {
+fn parse_version<'a>(input: &mut &'a str) -> ModalResult<&'a str> {
     preceded(space1, take_until(1.., "\r\n")).parse_next(input)
 }
 
-fn parse_request_line<'a>(input: &mut &'a str) -> PResult<RequestLine<'a>> {
+fn parse_request_line<'a>(input: &mut &'a str) -> ModalResult<RequestLine<'a>> {
     seq!(RequestLine {
         method: parse_method,
         path: parse_path,
@@ -44,7 +44,7 @@ fn parse_request_line<'a>(input: &mut &'a str) -> PResult<RequestLine<'a>> {
     .parse_next(input)
 }
 
-fn parse_header<'a>(input: &mut &'a str) -> PResult<Header<'a>> {
+fn parse_header<'a>(input: &mut &'a str) -> ModalResult<Header<'a>> {
     let mut key = preceded(space0, take_until(1.., ":")).map(|x: &str| x.trim());
     let mut value = preceded(space0, till_line_ending).map(|x: &str| x.trim());
 
@@ -58,17 +58,17 @@ fn parse_header<'a>(input: &mut &'a str) -> PResult<Header<'a>> {
     .parse_next(input)
 }
 
-fn parse_headers<'a>(input: &mut &'a str) -> PResult<Vec<Header<'a>>> {
+fn parse_headers<'a>(input: &mut &'a str) -> ModalResult<Vec<Header<'a>>> {
     let mut headers = repeat(0.., parse_header);
     headers.parse_next(input)
 }
 
-fn parse_body<'a>(input: &mut &'a str) -> PResult<Option<&'a str>> {
+fn parse_body<'a>(input: &mut &'a str) -> ModalResult<Option<&'a str>> {
     let body = preceded(multispace1, till_line_ending).map(|x: &str| x.trim());
     opt(body).parse_next(input)
 }
 
-pub fn parse_http_request<'a>(input: &mut &'a str) -> PResult<HttpRequest<'a>> {
+pub fn parse_http_request<'a>(input: &mut &'a str) -> ModalResult<HttpRequest<'a>> {
     seq!(HttpRequest {
         request_line: parse_request_line,
         headers: parse_headers,

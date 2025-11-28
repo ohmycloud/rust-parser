@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use winnow::ascii::{alphanumeric1, digit1, float, newline, space0, space1};
 use winnow::combinator::{opt, preceded, repeat, separated_pair, seq, terminated};
 use winnow::token::take_until;
-use winnow::{PResult, Parser};
+use winnow::{ModalResult, Parser};
 
 #[derive(Debug, PartialEq)]
 pub struct Coordinate {
@@ -17,15 +17,15 @@ pub struct Destination {
     pub tickets: u32,
 }
 
-fn parse_float<'s>(input: &mut &'s str) -> PResult<f64> {
+fn parse_float<'s>(input: &mut &'s str) -> ModalResult<f64> {
     float.parse_next(input)
 }
 
-fn parse_tickets<'s>(input: &mut &'s str) -> PResult<u32> {
+fn parse_tickets<'s>(input: &mut &'s str) -> ModalResult<u32> {
     preceded(space0, digit1.try_map(str::parse)).parse_next(input)
 }
 
-fn parse_coordinate<'a>(input: &mut &'a str) -> PResult<Coordinate> {
+fn parse_coordinate<'a>(input: &mut &'a str) -> ModalResult<Coordinate> {
     preceded(
         space0,
         separated_pair(parse_float, ',', parse_float).map(|(lat, lon)| Coordinate { lat, lon }),
@@ -33,15 +33,15 @@ fn parse_coordinate<'a>(input: &mut &'a str) -> PResult<Coordinate> {
     .parse_next(input)
 }
 
-fn parse_country_name<'a>(input: &mut &'a str) -> PResult<&'a str> {
+fn parse_country_name<'a>(input: &mut &'a str) -> ModalResult<&'a str> {
     terminated(alphanumeric1, newline).parse_next(input)
 }
 
-fn parse_city_name<'a>(input: &mut &'a str) -> PResult<&'a str> {
+fn parse_city_name<'a>(input: &mut &'a str) -> ModalResult<&'a str> {
     preceded(space1, take_until(1.., ':').map(|v: &str| v.trim())).parse_next(input)
 }
 
-fn parse_destination<'a>(input: &mut &'a str) -> PResult<Destination> {
+fn parse_destination<'a>(input: &mut &'a str) -> ModalResult<Destination> {
     seq!(
         Destination {
             name: parse_city_name.map(|x| x.to_string()),
@@ -55,14 +55,16 @@ fn parse_destination<'a>(input: &mut &'a str) -> PResult<Destination> {
     .parse_next(input)
 }
 
-fn parse_destinations<'a>(input: &mut &'a str) -> PResult<HashMap<&'a str, Vec<Destination>>> {
+fn parse_destinations<'a>(input: &mut &'a str) -> ModalResult<HashMap<&'a str, Vec<Destination>>> {
     let country_name = parse_country_name.parse_next(input)?;
 
     let destinations = repeat(1.., parse_destination).parse_next(input)?;
     Ok(std::iter::once((country_name, destinations)).collect())
 }
 
-pub fn parse_trips<'a>(input: &mut &'a str) -> PResult<Vec<HashMap<&'a str, Vec<Destination>>>> {
+pub fn parse_trips<'a>(
+    input: &mut &'a str,
+) -> ModalResult<Vec<HashMap<&'a str, Vec<Destination>>>> {
     repeat(0.., parse_destinations).parse_next(input)
 }
 

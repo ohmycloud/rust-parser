@@ -1,3 +1,4 @@
+use winnow::Parser;
 use winnow::ascii::digit1;
 use winnow::ascii::space1;
 use winnow::ascii::till_line_ending;
@@ -7,7 +8,6 @@ use winnow::combinator::seq;
 use winnow::prelude::*;
 use winnow::token::one_of;
 use winnow::token::take_until;
-use winnow::Parser;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Socket<'a> {
@@ -23,7 +23,7 @@ pub struct IotLog<'a> {
     pub payload: &'a str,
 }
 
-pub fn parse_datetime<'s>(s: &mut &'s str) -> PResult<&'s str> {
+pub fn parse_datetime<'s>(s: &mut &'s str) -> ModalResult<&'s str> {
     let mut parsed = separated(1.., digit1, one_of(['-', ':', '.', ' ']))
         .map(|()| ())
         .take();
@@ -31,7 +31,7 @@ pub fn parse_datetime<'s>(s: &mut &'s str) -> PResult<&'s str> {
     parsed.parse_next(s)
 }
 
-fn parse_socket<'a>(s: &mut &'a str) -> PResult<Socket<'a>> {
+fn parse_socket<'a>(s: &mut &'a str) -> ModalResult<Socket<'a>> {
     // 解析 IP 地址
     let mut parsed_ip = separated(1.., digit1, '.').map(|()| ()).take();
     // 解析端口号
@@ -46,14 +46,14 @@ fn parse_socket<'a>(s: &mut &'a str) -> PResult<Socket<'a>> {
 }
 
 // 解析 payload 荷载
-fn parse_payload<'a>(s: &mut &'a str) -> PResult<&'a str> {
+fn parse_payload<'a>(s: &mut &'a str) -> ModalResult<&'a str> {
     let parsed_payload = preceded(':', till_line_ending);
     let mut parsed_payload = preceded(take_until(1.., ":"), parsed_payload);
 
     parsed_payload.parse_next(s)
 }
 
-pub fn parse_log<'a>(s: &mut &'a str) -> PResult<IotLog<'a>> {
+pub fn parse_log<'a>(s: &mut &'a str) -> ModalResult<IotLog<'a>> {
     seq!(
         IotLog {
             data_time: parse_datetime,
