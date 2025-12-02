@@ -1,3 +1,21 @@
+[workspace]
+members = [
+    "src/with_nom/iot-log-parser",
+    "src/with_winnow/recipe-parser",
+    "src/with_winnow/recp",
+    "src/with_winnow/winnowcurl",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+description = "Rust parser examples"
+keywords = ["parser", "nom", "winnow", "pest"]
+repository = "https://github.com/ohmycloud/rust-parser"
+readme = "README.md"
+homepage = "https://github.com/ohmycloud/rust-parser"
+
 [package]
 name = "rparser"
 version = "0.1.0"
@@ -49,15 +67,3 @@ path = "src/with_pest/csv_app.rs"
 [[bin]]
 name = "ini_app"
 path = "src/with_pest/ini_app.rs"
-
-[lib]
-name = "recipe_parser"
-path = "src/with_winnow/recipe-parser/src/lib.rs"
-
-[[bin]]
-name = "recipe-parser"
-path = "src/with_winnow/recp/src/main.rs"
-
-[[bin]]
-name = "winnowcurl"
-path = "src/with_winnow/winnowcurl/src/main.rs"
