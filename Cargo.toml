@@ -57,3 +57,7 @@ path = "src/with_winnow/recipe-parser/src/lib.rs"
 [[bin]]
 name = "recipe-parser"
 path = "src/with_winnow/recp/src/main.rs"
+
+[[bin]]
+name = "winnowcurl"
+path = "src/with_winnow/winnowcurl/src/main.rs"
