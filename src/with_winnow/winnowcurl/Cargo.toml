@@ -1,0 +1,30 @@
+[package]
+name = "winnowcurl"
+description = "winnowcurl is a library written in Rust that uses the winnow library to parse cURL commands. It can handle various cURL options, including methods, headers, data, and flags."
+authors = ["ohmyclud"]
+repository = "https://github.com/ohmycloud/winnowcurl"
+readme = "./readme.md"
+keywords = ["parser", "winnow", "curl", "cmd"]
+version = "0.1.8"
+license = "MIT"
+edition = "2024"
+
+include = [
+    "LICENSE",
+    "readme.md",
+    "readme-cn.md",
+    ".gitignore",
+    "Cargo.toml",
+    "src/*.rs",
+    "src/*/*.rs",
+]
+
+[dependencies]
+clap = { version = "4.5.41", features = ["derive"] }
+winnow = "0.7"
+
+[features]
+debug-print = []
+
+[dev-dependencies]
+rstest = "0.25.0"
