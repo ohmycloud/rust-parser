@@ -1,6 +1,6 @@
 # Rust Parser Examples
 
-这是一个展示不同 Rust 解析器库（nom、winnow、pest）用法的示例项目。项目包含多个独立的包，每个包都展示了不同的解析技术和实际应用场景。
+这是一个展示不同 Rust 解析器库（nom、[winnow](https://github.com/winnow-rs/winnow)、[pest](https://pest.rs)）用法的示例项目。项目包含多个独立的包，每个包都展示了不同的解析技术和实际应用场景。
 
 ## 项目结构
 
