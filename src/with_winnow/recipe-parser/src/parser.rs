@@ -273,9 +273,11 @@ pub fn recipe_value<'a>(input: &mut Input<'a>) -> ModalResult<Token<'a>> {
         parse_backstory.map(|v| Token::Backstory(v)),
         parse_comment.map(|v| Token::Comment(v)),
         "(".map(|v| Token::Word(v)),
-        parse_word.map(|v| Token::Word(v)),
-        space1.map(|v| Token::Space(v)),
-        multispace1.map(|v| Token::Space(v)),
+        alt((
+            parse_word.map(|v| Token::Word(v)),
+            space1.map(|v| Token::Space(v)),
+            multispace1.map(|v| Token::Space(v)),
+        )),
     ))
     .parse_next(input)
 }

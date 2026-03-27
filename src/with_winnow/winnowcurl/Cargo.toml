@@ -21,7 +21,7 @@ include = [
 
 [dependencies]
 clap = { version = "4.5.41", features = ["derive"] }
-winnow = "0.7"
+winnow = "1.0.0"
 
 [features]
 debug-print = []
