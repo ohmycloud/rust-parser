@@ -1,0 +1,16 @@
+[package]
+name = "recipe-lang"
+version.workspace = true
+edition.workspace = true
+description.workspace = true
+keywords.workspace = true
+repository.workspace = true
+readme.workspace = true
+homepage.workspace = true
+
+[dependencies]
+pest = "2.8.6"
+pest_derive = "2.8.6"
+
+[dev-dependencies]
+rstest = "0.24.0"
