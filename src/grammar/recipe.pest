@@ -19,26 +19,23 @@ valid_string      = @{ valid_char+ }
 comment_inner     = @{ (!"*/" ~ ANY)* }
 comment           =  { "/*" ~ comment_inner ~ "*/" ~ h_space* }
 curly             = ${ "{" ~ valid_string ~ "}" }
-quantity          = @{ ASCII_DIGIT+ ~ (("." | "," | "/" | "_") ~ ASCII_DIGIT+)* }
-unit_inner        = @{ valid_char+ }
-ingredient_amount =  { "(" ~ h_space* ~ quantity? ~ h_space* ~ unit_inner? ~ h_space* ~ ")" }
+quantity          = @{ ASCII_DIGIT* ~ (("." | "," | "/" | "_") ~ ASCII_DIGIT+)* }
+unit              = @{ valid_char+ }
+ingredient_amount =  { "(" ~ h_space* ~ quantity? ~ h_space* ~ unit? ~ h_space* ~ ")" }
+ingredient        =  { curly ~ ingredient_amount? }
+material          =  { "&" ~ curly }
+timer             =  { "t" ~ curly }
+recipe_ref        =  { "@" ~ curly ~ ingredient_amount? }
+metadata_key      = @{ (!":" ~ !"\n" ~ !"\r" ~ ANY)+ }
+metadata_value    = @{ (!"\n" ~ !"\r" ~ ANY)* }
+metadata          =  { ">>" ~ h_space* ~ metadata_key ~ ":" ~ h_space* ~ metadata_value }
+backstory_rest    = @{ ANY* }
 
-ingredient = { curly ~ ingredient_amount? }
-material   = { "&" ~ curly }
-timer      = { "t" ~ curly }
-recipe_ref = { "@" ~ curly ~ ingredient_amount? }
-
-metadata_key   = @{ (!":" ~ !"\n" ~ !"\r" ~ ANY)+ }
-metadata_value = @{ (!"\n" ~ !"\r" ~ ANY)* }
-metadata       =  { ">>" ~ h_space* ~ metadata_key ~ ":" ~ h_space* ~ metadata_value }
-
-backstory_rest = @{ ANY* }
-backstory      =  {
+backstory =  {
     ("\n" | "\r\n" | "\r") ~ (" " | "\t" | "\n" | "\r")* ~ "---" ~ ("\n" | "\r\n" | "\r") ~ (" " | "\t" | "\n" | "\r")* ~ backstory_rest
 }
-
-word  = @{ (!("\n" | "\r" | " " | "\t") ~ ANY)+ }
-space = @{ ("\n" | "\r" | " " | "\t")+ }
+word      = @{ (!("\n" | "\r" | " " | "\t") ~ ANY)+ }
+space     = @{ ("\n" | "\r" | " " | "\t")+ }
 
 recipe_value = {
     metadata
