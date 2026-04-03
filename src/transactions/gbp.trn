@@ -1,0 +1,6 @@
+KIND      DATE        INSTITUTION        AMOUNT
+------------------------------------------------------------
+CREDIT    05152023    Barclays Payroll   £2,475.00
+DEBIT     06102023    HMRC Tax           £412.30
+CREDIT    07052023    Bank Transfer      £900.00
+DEBIT     07282023    ACH Transfer       £155.00
