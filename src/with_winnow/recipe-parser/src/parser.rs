@@ -605,6 +605,16 @@ mod test {
         assert!(recipe_result.is_ok());
     }
 
+    #[rstest]
+    #[case("Foo. bar", "Foo.")]
+    #[case("bar\tfoo", "bar")]
+    #[case("rakudo\nstar", "rakudo")]
+    fn test_word_parsing(#[case] input: String, #[case] expected: &str) {
+        let mut input = LocatingSlice::new(input.as_str());
+        let word = parse_word(&mut input).expect("failed to parse word");
+        assert_eq!(word, expected)
+    }
+
     #[test]
     fn test_parse_ok() {
         let input = "Boil the quinoa for t{5 minutes} in a &{pot}.\nPut the boiled {quinoa}(200gr) in the base of the bowl.";
