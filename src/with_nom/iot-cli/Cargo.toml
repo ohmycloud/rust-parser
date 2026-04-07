@@ -1,0 +1,12 @@
+[package]
+name = "iot-cli"
+version.workspace = true
+edition.workspace = true
+description.workspace = true
+keywords.workspace = true
+repository.workspace = true
+readme.workspace = true
+homepage.workspace = true
+
+[dependencies]
+iot-parser = { path = "../iot-parser", version = "*" }

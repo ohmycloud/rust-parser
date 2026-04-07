@@ -1,0 +1,12 @@
+[package]
+name = "weather-lang"
+version.workspace = true
+edition.workspace = true
+description.workspace = true
+keywords.workspace = true
+repository.workspace = true
+readme.workspace = true
+homepage.workspace = true
+
+[dependencies]
+nom = "7"

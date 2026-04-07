@@ -1,0 +1,12 @@
+[package]
+name = "weather-parser"
+version.workspace = true
+edition.workspace = true
+description.workspace = true
+keywords.workspace = true
+repository.workspace = true
+readme.workspace = true
+homepage.workspace = true
+
+[dependencies]
+winnow = { version = "1.0.0", features = ["parser"] }

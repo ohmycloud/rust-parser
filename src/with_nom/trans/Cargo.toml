@@ -1,0 +1,12 @@
+[package]
+name = "trans"
+version.workspace = true
+edition.workspace = true
+description.workspace = true
+keywords.workspace = true
+repository.workspace = true
+readme.workspace = true
+homepage.workspace = true
+
+[dependencies]
+trans-parser = { path = "../trans-parser", version = "0.1.0" }

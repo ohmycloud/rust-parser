@@ -1,11 +1,32 @@
 [workspace]
 members = [
+    "src/with_nom/iot-cli",
     "src/with_nom/iot-log-parser",
+    "src/with_nom/iot-parser",
+    "src/with_nom/log-byts",
+    "src/with_nom/log-zjkg",
+    "src/with_nom/trans",
+    "src/with_nom/trans-parser",
+    "src/with_nom/trip-cli",
+    "src/with_nom/trip-lang",
+    "src/with_nom/weather-cli",
+    "src/with_nom/weather-lang",
+    "src/with_pest/csv-cli",
+    "src/with_pest/ini-cli",
     "src/with_pest/recipe-lang",
     "src/with_pest/recp-cli",
+    "src/with_pest/trans-cli",
     "src/with_pest/transaction-lang",
+    "src/with_winnow/http-parser",
+    "src/with_winnow/log",
+    "src/with_winnow/log-parser",
     "src/with_winnow/recipe-parser",
     "src/with_winnow/recp",
+    "src/with_winnow/transaction",
+    "src/with_winnow/trip",
+    "src/with_winnow/trip-parser",
+    "src/with_winnow/weather",
+    "src/with_winnow/weather-parser",
     "src/with_winnow/winnowcurl",
 ]
 resolver = "2"
@@ -44,29 +65,5 @@ rstest = "0.24.0"
 serde_json = "1.0"
 
 [[bin]]
-name = "nom_app"
-path = "src/nom_app.rs"
-
-[[bin]]
-name = "winnow_app"
-path = "src/winnow_app.rs"
-
-[[bin]]
 name = "inclusion"
 path = "src/inclusion.rs"
-
-[[bin]]
-name = "mqtt"
-path = "src/mqtt.rs"
-
-[[bin]]
-name = "transaction_app"
-path = "src/with_pest/transaction_app.rs"
-
-[[bin]]
-name = "csv_app"
-path = "src/with_pest/csv_app.rs"
-
-[[bin]]
-name = "ini_app"
-path = "src/with_pest/ini_app.rs"

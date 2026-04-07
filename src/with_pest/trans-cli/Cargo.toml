@@ -1,0 +1,12 @@
+[package]
+name = "trans-cli"
+version.workspace = true
+edition.workspace = true
+description.workspace = true
+keywords.workspace = true
+repository.workspace = true
+readme.workspace = true
+homepage.workspace = true
+
+[dependencies]
+transaction-lang = { path = "../transaction-lang", version = "0.1.0"}

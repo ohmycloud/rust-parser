@@ -1,0 +1,13 @@
+[package]
+name = "http-parser"
+version.workspace = true
+edition.workspace = true
+description.workspace = true
+keywords.workspace = true
+repository.workspace = true
+readme.workspace = true
+homepage.workspace = true
+
+[dependencies]
+anyhow = "1.0.86"
+winnow = { version = "1.0.0", features = ["parser"] }

@@ -12,7 +12,7 @@ homepage = { workspace = true }
 categories = ["command-line-interface", "parser-implementations"]
 
 [dependencies]
-winnow ={ version = "1.0.0", features = ["parser"] }
+winnow = { version = "1.0.0", features = ["parser"] }
 schemars = { version = "0.8.16", optional = true }
 serde = { version = "1", features = ["derive"], optional = true }
 wasm-bindgen = {version = "0.2.92", optional = true}
