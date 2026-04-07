@@ -1,7 +1,7 @@
 [workspace]
 members = [
     "src/with_nom/iot-log-parser",
-    "src/with_pest/recipe-lang",
+    "src/with_pest/recipe-lang", "src/with_pest/transaction-lang",
     "src/with_winnow/recipe-parser",
     "src/with_winnow/recp",
     "src/with_winnow/winnowcurl",

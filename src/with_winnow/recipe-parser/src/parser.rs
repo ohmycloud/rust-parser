@@ -118,7 +118,7 @@ fn parse_material<'a>(input: &mut Input<'a>) -> ModalResult<&'a str> {
     preceded("&", parse_curly).parse_next(input)
 }
 
-/// Materials format:
+/// Timer format:
 ///
 /// ```recp
 /// t{25 minutes}
