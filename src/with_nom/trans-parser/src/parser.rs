@@ -1,11 +1,11 @@
 use nom::IResult;
-use nom::bytes::complete::take;
 use nom::bytes::complete::{tag, take_until};
-use nom::character::complete;
+use nom::bytes::complete::{take, take_while};
+use nom::character::complete::{self, line_ending, not_line_ending};
 use nom::character::complete::{alpha1, newline, space1};
 use nom::multi::{many0, many1};
 use nom::number::complete::double;
-use nom::sequence::tuple;
+use nom::sequence::{terminated, tuple};
 
 #[derive(Debug, PartialEq)]
 pub struct Transaction {
@@ -27,6 +27,19 @@ pub struct Date {
     pub month: u8,
     pub day: u8,
     pub year: u16,
+}
+
+// KIND      DATE        INSTITUTION        AMOUNT
+fn parse_header(input: &str) -> IResult<&str, &str> {
+    terminated(not_line_ending, line_ending)(input)
+}
+
+// ------------------------------------------------------------
+fn parse_separator(input: &str) -> IResult<&str, &str> {
+    terminated(
+        take_while(|c| c == '/' || c == ' ' || c == '-'),
+        line_ending,
+    )(input)
 }
 
 fn parse_month(input: &str) -> IResult<&str, u8> {
@@ -78,6 +91,8 @@ fn parse_amount(input: &str) -> IResult<&str, f64> {
 
 fn parse_transaction(input: &str) -> IResult<&str, Transaction> {
     let mut parser = tuple((
+        parse_header,
+        parse_separator,
         many0(newline),
         space1,
         parse_kind,
@@ -88,7 +103,7 @@ fn parse_transaction(input: &str) -> IResult<&str, Transaction> {
         parse_amount,
         many0(newline),
     ));
-    let (input, (_, _, kind, _, date, _, description, amount, _)) = parser(input)?;
+    let (input, (_, _, _, _, kind, _, date, _, description, amount, _)) = parser(input)?;
 
     Ok((
         input,
@@ -147,9 +162,13 @@ mod tests {
 
     #[test]
     fn test_transaction() {
-        let input = "    CREDIT    04062020    PayPal transfer    $4.99";
+        let input = r#"
+        KIND      DATE        INSTITUTION        AMOUNT
+        ------------------------------------------------------------
+        CREDIT    04062020    PayPal transfer    $4.99
+        "#;
         assert_eq!(
-            parse_transaction(input),
+            parse_transaction(input.trim()),
             Ok((
                 "",
                 Transaction {
