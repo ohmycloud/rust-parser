@@ -3,6 +3,7 @@ use nom::bytes::complete::{tag, take_until};
 use nom::bytes::complete::{take, take_while};
 use nom::character::complete::{self, line_ending, not_line_ending};
 use nom::character::complete::{alpha1, newline, space1};
+use nom::combinator::opt;
 use nom::multi::{many0, many1};
 use nom::number::complete::double;
 use nom::sequence::{terminated, tuple};
@@ -91,8 +92,8 @@ fn parse_amount(input: &str) -> IResult<&str, f64> {
 
 fn parse_transaction(input: &str) -> IResult<&str, Transaction> {
     let mut parser = tuple((
-        parse_header,
-        parse_separator,
+        opt(parse_header),
+        opt(parse_separator),
         many0(newline),
         space1,
         parse_kind,
