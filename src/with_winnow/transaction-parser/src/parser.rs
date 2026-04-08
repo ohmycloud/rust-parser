@@ -1,16 +1,29 @@
 use crate::Transaction;
 use crate::token::TransactionType;
-use winnow::combinator::preceded;
+use winnow::ascii::line_ending;
+use winnow::combinator::{preceded, terminated};
 use winnow::error::{AddContext, ContextError, ErrMode, StrContext};
 use winnow::prelude::*;
 use winnow::stream::Stream;
-use winnow::token::take_till;
+use winnow::token::{take_till, take_while};
 use winnow::{
     LocatingSlice, Parser, ascii::digit1, ascii::space0, ascii::space1, combinator::alt,
     combinator::opt,
 };
 
 type Input<'a> = LocatingSlice<&'a str>;
+
+fn parse_header<'a>(input: &mut Input<'a>) -> ModalResult<&'a str> {
+    terminated(take_while(1.., |c| c != '\n'), line_ending).parse_next(input)
+}
+
+fn parse_separator<'a>(input: &mut Input<'a>) -> ModalResult<&'a str> {
+    terminated(
+        take_while(1.., |c: char| c == '/' || c == ' ' || c == '-'),
+        line_ending,
+    )
+    .parse_next(input)
+}
 
 fn parse_transaction_type<'a>(input: &mut Input<'a>) -> ModalResult<TransactionType> {
     preceded(
@@ -53,7 +66,9 @@ fn parse_amount<'a>(input: &mut Input<'a>) -> ModalResult<f64> {
 }
 
 pub fn parse_transaction<'a>(input: &mut Input<'a>) -> ModalResult<Transaction> {
-    let (_, transaction_type, _, date, _, description, amount) = (
+    let (_, _, _, transaction_type, _, date, _, description, amount) = (
+        opt(parse_header),
+        opt(parse_separator),
         space0,
         parse_transaction_type,
         space1,
