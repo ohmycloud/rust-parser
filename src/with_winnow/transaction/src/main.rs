@@ -1,5 +1,5 @@
 use transaction_parser::parse_transaction;
-use winnow::Parser;
+use winnow::{LocatingSlice, Parser};
 
 fn main() -> Result<(), winnow::error::ParseError<&'static str, &'static str>> {
     let inputs = [
@@ -10,6 +10,7 @@ fn main() -> Result<(), winnow::error::ParseError<&'static str, &'static str>> {
     ];
 
     for input in inputs.iter() {
+        let input = LocatingSlice::new(*input);
         match parse_transaction.parse(input) {
             Ok(transaction) => println!("{:?}", transaction),
             Err(e) => println!("Error parsing '{}': {:?}", input, e),
