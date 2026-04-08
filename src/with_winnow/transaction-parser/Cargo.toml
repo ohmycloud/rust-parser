@@ -10,3 +10,6 @@ homepage.workspace = true
 
 [dependencies]
 winnow = { version = "1.0.0", features = ["parser"] }
+
+[dev-dependencies]
+rstest = "0.24.0"
