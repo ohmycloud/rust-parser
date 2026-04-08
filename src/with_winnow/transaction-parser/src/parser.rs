@@ -1,20 +1,25 @@
 use crate::Transaction;
 use crate::token::TransactionType;
-use winnow::ascii::space0;
-use winnow::combinator::alt;
+use winnow::combinator::preceded;
 use winnow::error::{AddContext, ContextError, ErrMode, StrContext};
 use winnow::prelude::*;
 use winnow::stream::Stream;
 use winnow::token::take_till;
-use winnow::{LocatingSlice, Parser, ascii::digit1, ascii::space1, combinator::opt};
+use winnow::{
+    LocatingSlice, Parser, ascii::digit1, ascii::space0, ascii::space1, combinator::alt,
+    combinator::opt,
+};
 
 type Input<'a> = LocatingSlice<&'a str>;
 
 fn parse_transaction_type<'a>(input: &mut Input<'a>) -> ModalResult<TransactionType> {
-    alt((
-        "CREDIT".value(TransactionType::CREDIT),
-        "DEBIT".value(TransactionType::DEBIT),
-    ))
+    preceded(
+        space0,
+        alt((
+            "CREDIT".value(TransactionType::CREDIT),
+            "DEBIT".value(TransactionType::DEBIT),
+        )),
+    )
     .parse_next(input)
 }
 
@@ -74,7 +79,7 @@ mod tests {
 
     #[rstest]
     #[case("CREDIT", TransactionType::CREDIT)]
-    #[case("DEBIT", TransactionType::DEBIT)]
+    #[case(" DEBIT", TransactionType::DEBIT)]
     fn test_parse_trans_kind(#[case] input: String, #[case] expected: TransactionType) {
         let mut input = LocatingSlice::new(input.as_str());
         let transaction_kind = parse_transaction_type(&mut input).unwrap();
