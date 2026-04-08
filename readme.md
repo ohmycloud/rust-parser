@@ -16,11 +16,9 @@
 
 ### 根项目二进制程序
 根 `Cargo.toml` 还定义了多个二进制程序，展示不同的解析技术：
-- `nom_app` - nom 示例应用（交易记录解析）
-- `winnow_app` - winnow 示例应用
+
 - `inclusion` - 包含解析示例
 - `mqtt` - MQTT 协议解析
-- `transaction_app` - 使用 pest 的交易解析
 - `csv_app` - 使用 pest 的 CSV 解析
 - `ini_app` - 使用 pest 的 INI 文件解析
 
@@ -83,30 +81,6 @@ cargo run -p iot_log_parser --bin iot_parser
 cargo run --bin iot_parser
 ```
 
-### 5. 其他解析示例
-
-```bash
-# 运行交易解析应用（使用 pest）
-cargo run --bin transaction_app
-
-# 运行 nom 示例应用
-cargo run --bin nom_app
-
-# 运行 winnow 示例应用
-cargo run --bin winnow_app
-
-# 运行 CSV 解析应用（使用 pest）
-cargo run --bin csv_app
-
-# 运行 INI 文件解析应用（使用 pest）
-cargo run --bin ini_app
-
-# 运行 MQTT 协议解析
-cargo run --bin mqtt
-
-# 运行包含解析示例
-cargo run --bin inclusion
-```
 
 ## 作为库使用
 
