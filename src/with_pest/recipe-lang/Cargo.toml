@@ -9,8 +9,8 @@ readme.workspace = true
 homepage.workspace = true
 
 [dependencies]
-pest = "2.8.6"
-pest_derive = "2.8.6"
+pest = "2.9.1"
+pest_derive = "2.9.1"
 
 [dev-dependencies]
 rstest = "0.24.0"
