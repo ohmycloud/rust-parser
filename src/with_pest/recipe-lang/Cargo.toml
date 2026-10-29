@@ -27,7 +27,7 @@ path = "src/lib.rs"
 
 # Adds serde Seralize implementation to Token
 serde = ["dep:serde"]
-wasm =["dep:wasm-bindgen", "dep:tsify"]
+wasm = ["serde", "dep:wasm-bindgen", "dep:tsify"]
 
 # Add JsonSchema generation for Token
 schemars = ["dep:schemars"]

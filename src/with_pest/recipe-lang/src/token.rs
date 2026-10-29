@@ -5,7 +5,6 @@ use std::fmt;
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "serde", serde(tag = "token", content = "content"))]
 #[cfg_attr(feature = "wasm", derive(tsify::Tsify))]
-#[cfg_attr(feature = "wasm", tsify(into_wasm_abi))]
 pub enum Token<'a> {
     Metadata {
         key: &'a str,

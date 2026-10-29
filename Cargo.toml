@@ -14,6 +14,8 @@ members = [
     "src/with_pest/csv-cli",
     "src/with_pest/ini-cli",
     "src/with_pest/recipe-lang",
+    "src/with_pest/recipe-wasm",
+    "src/with_pest/recipe-web",
     "src/with_pest/recp-cli",
     "src/with_pest/trans-cli",
     "src/with_pest/transaction-lang",
